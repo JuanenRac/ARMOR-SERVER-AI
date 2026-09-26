@@ -4,7 +4,15 @@
 
 # 👁️ ARMOR-SERVER-AI
 
-<p align="center">🇺🇸 <b>English</b> | <a href="README_spa.md">🇪🇸 Español</a></p>
+<p align="center">
+  🇺🇸 <b>English</b> |
+  <a href="README_spa.md">🇪🇸 Español</a> |
+  <a href="README_fra.md">🇫🇷 Français</a> |
+  <a href="README_ita.md">🇮🇹 Italiano</a> |
+  <a href="README_deu.md">🇩🇪 Deutsch</a> |
+  <a href="README_zho.md">🇨🇳 简体中文</a> |
+  <a href="README_jpn.md">🇯🇵 日本語</a>
+</p>
 
 ### Visual inference policy: decides and explains, never actuates
 
@@ -21,7 +29,7 @@
 
 ---
 
-## 1. 🛠️ OVERVIEW
+## 🎯 Overview
 
 * **Day/night profile with hysteresis:** low-light below 30 lux, back to daylight only above 60 lux and never twice within 30 s, so dusk cannot make it flap.
 * **Explainable fusion:** each detection and the radar tracks give a severity (`ignore`, `review`, `high`) with the reasons behind it. A person seen at 80 % or more **and** a radar track is `high`; low light lowers only the review bar; a detection older than 10 s is ignored.
@@ -29,9 +37,16 @@
 * **Checksum-verified engines:** pre-built TensorRT engines are accepted only if present, non-empty and, with an `engines.json`, matching their SHA-256. Nothing is compiled or downloaded.
 * **JSONL worker:** numbered, explained results; a bad line reports its number and never stops the stream.
 
----
+## 📂 Repository Structure
 
-## 2. 🔧 BUILD & RUN
+```text
+ARMOR-SERVER-AI/
+├── src/armor_server_ai/   profile, policy, engine_registry, cli
+├── tests/
+└── docs/INFERENCE_BOUNDARY.md
+```
+
+## 🛠️ Development Environment
 
 ```powershell
 $env:PYTHONPATH="src"
@@ -41,18 +56,32 @@ echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m 
 
 See the [inference boundary](docs/INFERENCE_BOUNDARY.md).
 
----
+## 🔗 Related Projects
 
-## 📂 DIRECTORY STRUCTURE
+**A.R.M.O.R.** (Autonomous Radar & Multimodal Observation Range) is a perimeter-security system made of independent repositories. Each one has its own version, its own tests and its own README; this is the family:
 
-```text
-ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile, policy, engine_registry, cli
-├── tests/
-└── docs/INFERENCE_BOUNDARY.md
-```
+* **[ARMOR-COMMON](../ARMOR-COMMON)** - Message contracts, validators, conformance vectors and generated types
+* **[ARMOR-RADAR](../ARMOR-RADAR)** - Field-node firmware for ESP32-S3 with three radars and its own web panel
+* **[ARMOR-SOLAR](../ARMOR-SOLAR)** - Solar inverter and battery protocols and the messages of a gateway node
+* **[ARMOR-SERVER](../ARMOR-SERVER)** - Central coordinator: telemetry, alarms, devices, solar readings and cameras
+* **[ARMOR-STUDIO](../ARMOR-STUDIO)** - Web console: cameras, radar, alarms, solar energy and the 2D/3D site designer
+* **[ARMOR-ANDROID-CONTROL](../ARMOR-ANDROID-CONTROL)** - Android operator client with a live 2D/3D radar
+* **ARMOR-SERVER-AI** (this repository) - Visual inference policy that explains its decisions and never actuates
+* **[ARMOR-VOICE-AI](../ARMOR-VOICE-AI)** - Offline voice intents with a confirmation that cannot be forged
+* **[ARMOR-HARDWARE](../ARMOR-HARDWARE)** - Enclosures, electronics and the bench acceptance matrix
+* **[ARMOR-DEVOPS](../ARMOR-DEVOPS)** - Deployment, the CM5 test bench, backup and TLS
+* **[ARMOR-SIMULATOR](../ARMOR-SIMULATOR)** - Offline telemetry simulator with repeatable faults
+* **[ARMOR-DOCS](../ARMOR-DOCS)** - Architecture, security baseline and the capability matrix
 
----
+## 📚 Documentation & Community
+
+Where to read more:
+
+* [Capability matrix: what is proven and what is not](../ARMOR-DOCS/docs/CAPABILITY_MATRIX.md)
+* [Project catalogue: versions and how the repositories depend on each other](../ARMOR-DOCS/docs/PROJECT_CATALOG.md)
+* [Changelog of this repository](CHANGELOG.md)
+* [License (GPL-3.0-or-later)](LICENSE)
+* Questions, ideas and reports: electrohobby3d@gmail.com
 
 ## 👤 AUTHOR
 
