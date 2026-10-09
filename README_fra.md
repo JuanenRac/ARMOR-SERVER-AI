@@ -25,7 +25,7 @@
 
 ---
 
-**Vérification d'honnêteté - ce qui fonctionne aujourd'hui:** La couche de décision est réelle et testée (26 tests). **Rien ici ne fait encore tourner une caméra, du RTSP ou TensorRT** : cela demande le Jetson, et ce n'est pas prouvé.
+**Vérification d'honnêteté - ce qui fonctionne aujourd'hui:** La couche de décision est réelle et testée (35 tests). **Aucun détecteur neuronal ni TensorRT ne tourne encore ici** (cela demande le Jetson, et ce n'est pas prouvé) : le service de surveillance compare seulement des images pour voir que quelque chose a bougé, sur la CM5, et n'a pas été essayé avec une vraie alarme.
 
 ---
 
@@ -36,14 +36,15 @@
 * **Recommandations seulement :** une décision porte toujours `authorizes_action = false`. Le serveur central authentifie et autorise chaque action.
 * **Moteurs vérifiés par somme de contrôle :** les moteurs TensorRT pré-compilés ne sont acceptés que s'ils existent, ne sont pas vides et, avec un `engines.json`, correspondent à leur SHA-256. Rien n'est compilé ni téléchargé.
 * **Worker JSONL :** résultats numérotés et expliqués ; une ligne invalide signale son numéro et n'arrête jamais le flux.
+* **Un service qui surveille :** `armor-server-ai` regarde toutes les quelques secondes les caméras que le serveur lui liste (images grises 64x36 via ffmpeg) et, quand quelque chose bouge, interroge la politique ; système armé, il lève une alarme `camera_motion`. Il parle au serveur avec un jeton à lui et indique dans son journal quand son problème change et quand il est terminé ; voir [le service](docs/SERVICE.md).
 
 ## 📂 Structure du dépôt
 
 ```text
 ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile, policy, engine_registry, cli
+├── src/armor_server_ai/   profile, policy, motion, service, engine_registry, cli
 ├── tests/
-└── docs/INFERENCE_BOUNDARY.md
+└── docs/INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
 ## 🛠️ Environnement de développement

@@ -25,7 +25,7 @@
 
 ---
 
-**Ehrlichkeitsprüfung - was heute läuft:** Die Entscheidungsschicht ist real und getestet (26 Tests). **Hier läuft noch keine Kamera, kein RTSP und kein TensorRT**: dafür braucht es den Jetson, und das ist nicht belegt.
+**Ehrlichkeitsprüfung - was heute läuft:** Die Entscheidungsschicht ist real und getestet (35 Tests). **Hier läuft noch kein neuronaler Detektor und kein TensorRT** (dafür braucht es den Jetson, und das ist nicht belegt): der beobachtende Dienst vergleicht nur Bilder, um Bewegung zu erkennen, auf der CM5, und wurde nicht mit einem echten Alarm erprobt.
 
 ---
 
@@ -36,14 +36,15 @@
 * **Nur Empfehlungen:** eine Entscheidung trägt immer `authorizes_action = false`. Der zentrale Server authentifiziert und autorisiert jede Aktion.
 * **Prüfsummengeprüfte Engines:** vorgebaute TensorRT-Engines werden nur akzeptiert, wenn sie vorhanden und nicht leer sind und mit einer `engines.json` ihrem SHA-256 entsprechen. Nichts wird kompiliert oder heruntergeladen.
 * **JSONL-Worker:** nummerierte, erklärte Ergebnisse; eine fehlerhafte Zeile meldet ihre Nummer und stoppt den Strom nie.
+* **Ein beobachtender Dienst:** `armor-server-ai` sieht alle paar Sekunden die Kameras an, die der Server auflistet (graue 64x36-Bilder über ffmpeg), und fragt bei Bewegung die Richtlinie; bei scharfem System löst er einen Alarm `camera_motion` aus. Er spricht mit einem eigenen Token mit dem Server und meldet im Log, wann sich sein Problem ändert und wann es vorbei ist; siehe [der Dienst](docs/SERVICE.md).
 
 ## 📂 Struktur des Repositorys
 
 ```text
 ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile, policy, engine_registry, cli
+├── src/armor_server_ai/   profile, policy, motion, service, engine_registry, cli
 ├── tests/
-└── docs/INFERENCE_BOUNDARY.md
+└── docs/INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
 ## 🛠️ Entwicklungsumgebung
