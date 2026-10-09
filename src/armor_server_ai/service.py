@@ -209,15 +209,18 @@ def main(argv: list[str] | None = None) -> None:
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
     print(f"armor-ai: watching, every {interval:g} s", file=sys.stderr, flush=True)
-    failing = False
+    last_problem = ""   # what was said last, so it is said again only when it changes, and when it is over
     while not stopping:
         try:
             watcher.run_once()
-            failing = False
+            if last_problem:
+                print("armor-ai: the server answers again", file=sys.stderr, flush=True)
+                last_problem = ""
         except (ServerError, ValueError) as error:
-            if not failing:   # said once, again after a pass that worked
-                print(f"armor-ai: the server could not be asked ({getattr(error, 'code', error)})", file=sys.stderr, flush=True)
-            failing = True
+            problem = str(getattr(error, "code", error))
+            if problem != last_problem:
+                print(f"armor-ai: the server could not be asked ({problem})", file=sys.stderr, flush=True)
+                last_problem = problem
         time.sleep(interval)
 
 
