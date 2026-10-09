@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.3] - The service says when its problem changes and when it is over
+
+- The log said a problem once and then nothing, so a server that was down for a moment and one that refused the token looked the same. It now says every new problem when it changes (`unreachable`, `unauthorized`...) and *the server answers again* when it is over.
+
 ## [0.2.2] - It runs: movement on the cameras, weighed with the radars
 
 - **`python -m armor_server_ai.service`**, the observation service the server asks nothing of and which asks the server (with its own token, `ARMOR_AI_TOKEN`): while the system is **armed** it takes one tiny grey frame (64 x 36, from the camera's stream, never stored) of each camera every few seconds, measures how much of the picture moved (`motion.py`: no neural network, no GPU), and - when the movement is seen in several frames in a row, is not the whole picture changing (a light switched on), and the policy finds it worth a review - tells the server, which raises a `camera_motion` alarm (once until it is closed) that goes to the notifications, Telegram and Home Assistant. Disarmed, it looks at nothing. It holds no camera address or password and cannot arm, disarm or change anything.
