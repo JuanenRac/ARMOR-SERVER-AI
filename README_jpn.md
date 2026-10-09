@@ -25,7 +25,7 @@
 
 ---
 
-**正直さのチェック - 今日動いているもの:** 判断層は実在し、テストされています（26 件）。**ここではまだカメラ、RTSP、TensorRT は動きません**：Jetson が必要で、実証されていません。
+**正直さのチェック - 今日動いているもの:** 判断層は実在し、テストされています（35 件）。**ニューラル検出器や TensorRT はまだ動きません**（Jetson が必要で、実証されていません）：見張るサービスは CM5 上で画像を比べて動きを見つけるだけで、実際のアラームでは試されていません。
 
 ---
 
@@ -36,14 +36,15 @@
 * **推奨のみ：** 判断には常に `authorizes_action = false` が付きます。中央サーバーがすべての動作を認証し認可します。
 * **チェックサム検証済みエンジン：** ビルド済みの TensorRT エンジンは、存在し、空でなく、`engines.json` があればその SHA-256 と一致する場合にのみ受け入れます。コンパイルもダウンロードもしません。
 * **JSONL ワーカー：** 番号付きで説明付きの結果。不正な行はその番号を報告し、ストリームを止めません。
+* **見張るサービス：** `armor-server-ai` は数秒ごとにサーバーが示すカメラを見て（ffmpeg で 64x36 のグレー画像）、動きがあればポリシーに問い合わせます。システムが警戒中なら `camera_motion` アラームを上げます。専用のトークンでサーバーと通信し、問題が変わったときと終わったときをログに記します。[サービスの説明](docs/SERVICE.md)を参照。
 
 ## 📂 リポジトリの構成
 
 ```text
 ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile, policy, engine_registry, cli
+├── src/armor_server_ai/   profile, policy, motion, service, engine_registry, cli
 ├── tests/
-└── docs/INFERENCE_BOUNDARY.md
+└── docs/INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
 ## 🛠️ 開発環境

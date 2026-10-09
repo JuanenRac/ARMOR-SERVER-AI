@@ -25,7 +25,7 @@
 
 ---
 
-**Comprobación de honestidad - qué funciona hoy:** La capa de decisión es real y está probada (26 tests). **Nada de esto ejecuta todavía una cámara, RTSP ni TensorRT**: eso necesita la Jetson y no está demostrado.
+**Comprobación de honestidad - qué funciona hoy:** La capa de decisión es real y está probada (35 tests). **Aquí todavía no corre ningún detector neuronal ni TensorRT** (eso necesita la Jetson y no está demostrado): el servicio que vigila solo compara fotogramas para ver que algo se movió, en la CM5, y no se ha probado con una alarma real.
 
 ---
 
@@ -36,14 +36,15 @@
 * **Solo recomendaciones:** una decisión lleva siempre `authorizes_action = false`. El servidor central autentica y autoriza cada acción.
 * **Motores verificados por hash:** los motores TensorRT precompilados solo se aceptan si existen, no están vacíos y, con un `engines.json`, coinciden con su SHA-256. No se compila ni se descarga nada.
 * **Trabajador JSONL:** resultados numerados y explicados; una línea errónea indica su número y nunca detiene el flujo.
+* **Un servicio que vigila:** `armor-server-ai` mira cada pocos segundos las cámaras que le lista el servidor (fotogramas grises de 64x36 con ffmpeg) y, cuando algo se mueve, consulta la política; con el sistema armado levanta una alarma `camera_motion`. Habla con el servidor con un token propio y dice en su registro cuándo cambia su problema y cuándo termina; ver [el servicio](docs/SERVICE.md).
 
 ## 📂 Estructura del repositorio
 
 ```text
 ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile, policy, engine_registry, cli
+├── src/armor_server_ai/   profile, policy, motion, service, engine_registry, cli
 ├── tests/
-└── docs/INFERENCE_BOUNDARY.md
+└── docs/INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
 ## 🛠️ Entorno de desarrollo

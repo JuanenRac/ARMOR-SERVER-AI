@@ -25,7 +25,7 @@
 
 ---
 
-**诚实性检查 - 今天真正能运行的部分:** 决策层是真实的并经过测试（26 个测试）。**这里目前还不会运行摄像头、RTSP 或 TensorRT**：那需要 Jetson，且尚未证实。
+**诚实性检查 - 今天真正能运行的部分:** 决策层是真实的并经过测试（35 个测试）。**这里目前还没有运行神经网络检测器或 TensorRT**（那需要 Jetson，且尚未证实）：监视服务只在 CM5 上比较画面以判断是否有物体移动，尚未用真实警报试过。
 
 ---
 
@@ -36,14 +36,15 @@
 * **只给建议：** 决策始终带有 `authorizes_action = false`。中央服务器对每个动作进行认证和授权。
 * **校验和验证的引擎：** 预构建的 TensorRT 引擎只有在存在、非空且（有 `engines.json` 时）与其 SHA-256 一致时才被接受。不会编译或下载任何东西。
 * **JSONL 工作进程：** 带编号并附解释的结果；有问题的行会报告它的行号，且绝不会中断数据流。
+* **一个负责监视的服务：** `armor-server-ai` 每隔几秒查看服务器列出的摄像头（通过 ffmpeg 取得 64x36 灰度画面），有物体移动时询问策略；系统布防时会发出 `camera_motion` 警报。它用自己的令牌与服务器通信，并在日志中说明问题何时变化、何时结束；见[服务说明](docs/SERVICE.md)。
 
 ## 📂 仓库结构
 
 ```text
 ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile, policy, engine_registry, cli
+├── src/armor_server_ai/   profile, policy, motion, service, engine_registry, cli
 ├── tests/
-└── docs/INFERENCE_BOUNDARY.md
+└── docs/INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
 ## 🛠️ 开发环境
