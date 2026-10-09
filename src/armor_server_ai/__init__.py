@@ -7,4 +7,4 @@ __all__ = [
     "DAYLIGHT", "Decision", "EngineRegistryError", "EngineSet", "LOW_LIGHT", "ProfileSelector", "VisualObservation",
     "choose_profile", "decide", "discover_engines", "event_severity",
 ]
-__version__ = "0.2.1"
+__version__ = "0.2.2"

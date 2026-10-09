@@ -13,7 +13,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-LABELS = frozenset({"person", "vehicle", "animal", "unknown"})
+#: "motion" is what the movement detector (motion.py) sees: something moved, not what it is.
+LABELS = frozenset({"person", "vehicle", "animal", "unknown", "motion"})
 SEVERITIES = ("ignore", "review", "high")
 MAX_AGE_S = 10.0
 
@@ -66,6 +67,11 @@ def decide(observation: VisualObservation, radar_tracks: int) -> Decision:
     if observation.label == "person" and observation.confidence >= HIGH_CONFIDENCE and radar_tracks:
         return Decision("high", (
             f"person seen with {observation.confidence:.0%} confidence",
+            f"{radar_tracks} radar track(s) agree",
+        ))
+    if observation.label == "motion" and observation.confidence >= HIGH_CONFIDENCE and radar_tracks:
+        return Decision("high", (
+            f"strong movement on the camera ({observation.confidence:.0%})",
             f"{radar_tracks} radar track(s) agree",
         ))
     reasons: list[str] = []
