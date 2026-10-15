@@ -97,7 +97,20 @@ class WatcherTests(unittest.TestCase):
         for _ in range(4):
             watcher.run_once()
         self.assertEqual(lit.told, [])
-        self.assertGreater(changed_ratio(frame(20), frame(200)), GLOBAL_CHANGE_RATIO)
+        self.assertEqual(changed_ratio(frame(20), frame(200)), 0.0, "the whole picture changing by the same amount is a light, not movement")
+        # a change of the light with a real movement in it: only the movement counts
+        self.assertEqual(changed_ratio(frame(100), frame(160, moved=230, to=255)), 230 / FRAME_BYTES)
+
+    def test_the_radar_and_the_light_that_count_are_those_of_the_nodes_that_cover_the_camera(self):
+        server = Server(tracks=0, lux=200.0, cameras=("cam-a",))
+        base = server.context
+        server.context = lambda: {**base(), "nodes": [{"id": "north", "online": True, "targets": 0, "lux": 200.0}, {"id": "south", "online": True, "targets": 3, "lux": 5.0}],
+                                  "cameras": [{"id": "cam-a", "nodes": ["north"]}]}
+        server.frames["cam-a"] = [frame(100), frame(100, moved=230)]
+        watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+        watcher.run_once()
+        watcher.run_once()
+        self.assertEqual([(item["radar_tracks"], item["profile"]) for item in server.told], [(0, "daylight")], "the 3 targets of the other side of the house are not this camera's")
 
     def test_a_camera_that_does_not_answer_is_skipped_and_the_others_go_on(self):
         server = Server(tracks=1, lux=200.0, cameras=("cam-a", "cam-b"))

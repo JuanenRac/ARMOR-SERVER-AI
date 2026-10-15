@@ -30,7 +30,11 @@ def changed_ratio(previous: bytes, current: bytes, threshold: int = PIXEL_THRESH
     """The share (0 to 1) of the pixels that changed by more than `threshold` between two frames."""
     check_frame(previous)
     check_frame(current)
-    moved = sum(1 for before, after in zip(previous, current) if abs(before - after) > threshold)
+    # The whole picture getting brighter or darker (the camera's automatic exposure, a cloud, the switch to infrared) is not something moving: the typical change of all the pixels
+    # (their median, which a moving person barely shifts) is taken away first, so only what changed MORE than the rest counts.
+    differences = [after - before for before, after in zip(previous, current)]
+    shift = sorted(differences)[len(differences) // 2]
+    moved = sum(1 for difference in differences if abs(difference - shift) > threshold)
     return moved / FRAME_BYTES
 
 

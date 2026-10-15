@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.4] - Audit round two: motion and service fixes
+
+- Fixes in the motion handling and in the service, with tests.
+
 ## [0.2.3] - The service says when its problem changes and when it is over
 
 - The log said a problem once and then nothing, so a server that was down for a moment and one that refused the token looked the same. It now says every new problem when it changes (`unreachable`, `unauthorized`...) and *the server answers again* when it is over.

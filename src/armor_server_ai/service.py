@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from concurrent.futures import ThreadPoolExecutor
 import os
 import signal
 import sys
@@ -145,22 +146,34 @@ class Watcher:
         if context.get("mode") != "armed":
             self._cameras.clear()   # when it is armed again the first frame has nothing old to be compared with
             return []
-        nodes = [node for node in context.get("nodes", []) if node.get("online")]
-        tracks = sum(int(node.get("targets") or 0) for node in nodes)
-        lux_values = [float(node["lux"]) for node in nodes if isinstance(node.get("lux"), (int, float))]
-        node_lux = min(lux_values) if lux_values else None
+        online = [node for node in context.get("nodes", []) if node.get("online")]
         told: list[dict] = []
-        wanted = {camera["id"] for camera in context.get("cameras", [])}
+        cameras = {camera["id"]: camera for camera in context.get("cameras", []) if isinstance(camera, dict) and "id" in camera}
+        wanted = set(cameras)
         for gone in set(self._cameras) - wanted:
             del self._cameras[gone]
-        for camera_id in sorted(wanted):
+        # The pictures are asked for at the same time: a camera that does not answer made every other one wait its whole timeout, pass after pass.
+        def fetch(camera_id: str):
             try:
-                frame = self._server.frame(camera_id)
-            except ServerError:
+                return self._server.frame(camera_id)
+            except ServerError as error:
+                return error
+        order = sorted(wanted)
+        with ThreadPoolExecutor(max_workers=min(4, max(1, len(order)))) as pool:
+            frames = dict(zip(order, pool.map(fetch, order)))
+        for camera_id in order:
+            frame = frames[camera_id]
+            if isinstance(frame, ServerError):
                 self._cameras.pop(camera_id, None)   # a camera that did not answer: the next frame starts again
                 continue
             if len(frame) != FRAME_BYTES:
                 continue
+            # The radar nodes and the light that count for this camera are the ones the server says cover it (`nodes` in its entry); when it does not say, all of them do (as before).
+            covering = cameras[camera_id].get("nodes")
+            nodes = [node for node in online if (node.get("id") or node.get("node_id")) in covering] if isinstance(covering, list) and covering else online
+            tracks = sum(int(node.get("targets") or 0) for node in nodes)
+            lux_values = [float(node["lux"]) for node in nodes if isinstance(node.get("lux"), (int, float))]
+            node_lux = min(lux_values) if lux_values else None
             sighting = look(self._cameras.setdefault(camera_id, CameraState()), camera_id, frame, self._clock(), tracks, node_lux, self._confirm, self._cooldown)
             if sighting is None:
                 continue
