@@ -25,7 +25,7 @@
 
 ---
 
-**诚实性检查 - 今天真正能运行的部分:** 决策层是真实的并经过测试（35 个测试）。**这里目前还没有运行神经网络检测器或 TensorRT**（那需要 Jetson，且尚未证实）：监视服务只在 CM5 上比较画面以判断是否有物体移动，尚未用真实警报试过。
+**诚实性检查 - 今天真正能运行的部分:** 决策层是真实的并经过测试（26 个测试）。**这里目前还不会运行摄像头、RTSP 或 TensorRT**：那需要 Jetson，且尚未证实。
 
 ---
 
@@ -36,15 +36,14 @@
 * **只给建议：** 决策始终带有 `authorizes_action = false`。中央服务器对每个动作进行认证和授权。
 * **校验和验证的引擎：** 预构建的 TensorRT 引擎只有在存在、非空且（有 `engines.json` 时）与其 SHA-256 一致时才被接受。不会编译或下载任何东西。
 * **JSONL 工作进程：** 带编号并附解释的结果；有问题的行会报告它的行号，且绝不会中断数据流。
-* **一个负责监视的服务：** `armor-server-ai` 每隔几秒查看服务器列出的摄像头（通过 ffmpeg 取得 64x36 灰度画面），有物体移动时询问策略；系统布防时会发出 `camera_motion` 警报。它用自己的令牌与服务器通信，并在日志中说明问题何时变化、何时结束；见[服务说明](docs/SERVICE.md)。
 
 ## 📂 仓库结构
 
 ```text
 ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile, policy, motion, service, engine_registry, cli
+├── src/armor_server_ai/   profile, policy, engine_registry, cli
 ├── tests/
-└── docs/INFERENCE_BOUNDARY.md, SERVICE.md
+└── docs/INFERENCE_BOUNDARY.md
 ```
 
 ## 🛠️ 开发环境
@@ -65,14 +64,12 @@ echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m 
 * **[ARMOR-RADAR](https://github.com/JuanenRac/ARMOR-RADAR)** - 适用于 ESP32-S3 的现场节点固件，带三个雷达和自带网页面板
 * **[ARMOR-SOLAR](https://github.com/JuanenRac/ARMOR-SOLAR)** - 太阳能逆变器与电池的协议，以及网关节点的消息
 * **[ARMOR-ELECTRICAL](https://github.com/JuanenRac/ARMOR-ELECTRICAL)** - 电气节点：电表、电网读数消息和开关规则
-* **[ARMOR-ALARM](https://github.com/JuanenRac/ARMOR-ALARM)** - 报警节点与报警主机：防区、布防、延时、警笛和 PIN，有无服务器均可
 * **[ARMOR-HMI](https://github.com/JuanenRac/ARMOR-HMI)** - 触摸面板：墙面屏幕上的系统状态、布防与确认，以及语音助手的所在
 * **[ARMOR-NETWORK](https://github.com/JuanenRac/ARMOR-NETWORK)** - 本地网络：其设备、互联网以及变化
 * **[ARMOR-SERVER](https://github.com/JuanenRac/ARMOR-SERVER)** - 中央协调器：遥测、报警、设备、太阳能读数和摄像头
 * **[ARMOR-STUDIO](https://github.com/JuanenRac/ARMOR-STUDIO)** - 网页控制台：摄像头、雷达、报警、太阳能和 2D/3D 场地设计器
 * **[ARMOR-ANDROID-CONTROL](https://github.com/JuanenRac/ARMOR-ANDROID-CONTROL)** - 带实时 2D/3D 雷达的 Android 操作员客户端
 * **ARMOR-SERVER-AI** (本仓库) - 会解释决策且从不执行动作的视觉推理策略
-* **[ARMOR-VISION](https://github.com/JuanenRac/ARMOR-VISION)** - Jetson Orin NX 上的摄像头区域、遮罩与检测规则
 * **[ARMOR-VOICE-AI](https://github.com/JuanenRac/ARMOR-VOICE-AI)** - 带无法伪造确认的离线语音意图
 * **[ARMOR-HARDWARE](https://github.com/JuanenRac/ARMOR-HARDWARE)** - 外壳、电子器件和台架验收矩阵
 * **[ARMOR-DEVOPS](https://github.com/JuanenRac/ARMOR-DEVOPS)** - 部署、CM5 测试台、备份与 TLS

@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [0.2.4] - Audit round two: motion and service fixes
+## [0.2.4] - Motion and service fixes
 
 - Fixes in the motion handling and in the service, with tests.
 

@@ -25,7 +25,7 @@
 
 ---
 
-**Honesty check - what runs today:** The decision layer is real and tested (35 tests). **No neural detector or TensorRT runs here yet** (that needs the Jetson, and it is not proven): the watching service only compares frames to see that something moved, on the CM5, and has not been tried with a real alarm.
+**Honesty check - what runs today:** The decision layer is real and tested (26 tests). **Nothing here runs a camera, RTSP or TensorRT yet**: that needs the Jetson, and it is not proven.
 
 ---
 
@@ -36,15 +36,14 @@
 * **Recommendations only:** a decision always carries `authorizes_action = false`. The central server authenticates and authorises every action.
 * **Checksum-verified engines:** pre-built TensorRT engines are accepted only if present, non-empty and, with an `engines.json`, matching their SHA-256. Nothing is compiled or downloaded.
 * **JSONL worker:** numbered, explained results; a bad line reports its number and never stops the stream.
-* **A watching service:** `armor-server-ai` looks at the cameras the server lists every few seconds (grey 64x36 frames through ffmpeg) and, when something moves, asks the policy; with the system armed it raises a `camera_motion` alarm. It speaks to the server with a token of its own and says in its log when its problem changes and when it is over; see [the service](docs/SERVICE.md).
 
 ## 📂 Repository Structure
 
 ```text
 ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile, policy, motion, service, engine_registry, cli
+├── src/armor_server_ai/   profile, policy, engine_registry, cli
 ├── tests/
-└── docs/INFERENCE_BOUNDARY.md, SERVICE.md
+└── docs/INFERENCE_BOUNDARY.md
 ```
 
 ## 🛠️ Development Environment
@@ -65,14 +64,12 @@ See the [inference boundary](docs/INFERENCE_BOUNDARY.md).
 * **[ARMOR-RADAR](https://github.com/JuanenRac/ARMOR-RADAR)** - Field-node firmware for ESP32-S3 with three radars and its own web panel
 * **[ARMOR-SOLAR](https://github.com/JuanenRac/ARMOR-SOLAR)** - Solar inverter and battery protocols and the messages of a gateway node
 * **[ARMOR-ELECTRICAL](https://github.com/JuanenRac/ARMOR-ELECTRICAL)** - Electrical node: meters, the message of the network's readings and the rules for switching
-* **[ARMOR-ALARM](https://github.com/JuanenRac/ARMOR-ALARM)** - Alarm node and panel: zones, arming, delays, siren and PIN, with the server or without it
 * **[ARMOR-HMI](https://github.com/JuanenRac/ARMOR-HMI)** - Touch panel: the state of the system on a wall screen, arming and acknowledging, and the home of the voice assistant
 * **[ARMOR-NETWORK](https://github.com/JuanenRac/ARMOR-NETWORK)** - The local network: its devices, the internet and what changes
 * **[ARMOR-SERVER](https://github.com/JuanenRac/ARMOR-SERVER)** - Central coordinator: telemetry, alarms, devices, solar readings and cameras
 * **[ARMOR-STUDIO](https://github.com/JuanenRac/ARMOR-STUDIO)** - Web console: cameras, radar, alarms, solar energy and the 2D/3D site designer
 * **[ARMOR-ANDROID-CONTROL](https://github.com/JuanenRac/ARMOR-ANDROID-CONTROL)** - Android operator client with a live 2D/3D radar
 * **ARMOR-SERVER-AI** (this repository) - Visual inference policy that explains its decisions and never actuates
-* **[ARMOR-VISION](https://github.com/JuanenRac/ARMOR-VISION)** - Camera zones, masks and detection rules for the Jetson Orin NX
 * **[ARMOR-VOICE-AI](https://github.com/JuanenRac/ARMOR-VOICE-AI)** - Offline voice intents with a confirmation that cannot be forged
 * **[ARMOR-HARDWARE](https://github.com/JuanenRac/ARMOR-HARDWARE)** - Enclosures, electronics and the bench acceptance matrix
 * **[ARMOR-DEVOPS](https://github.com/JuanenRac/ARMOR-DEVOPS)** - Deployment, the CM5 test bench, backup and TLS
