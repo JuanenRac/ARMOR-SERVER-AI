@@ -15,47 +15,68 @@
   <a href="README_por.md">🇵🇹 Português</a>
 </p>
 
-### Visual inference policy: decides and explains, never actuates
+### Observation service: movement on the cameras weighed with the radars; it decides and explains, never actuates
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Maturity-functional%20baseline-00E5FF.svg" alt="Maturity">
+  <img src="https://img.shields.io/badge/Tests-42%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Version-0.2.5-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**Honesty check - what runs today:** The decision layer is real and tested (26 tests). **Nothing here runs a camera, RTSP or TensorRT yet**: that needs the Jetson, and it is not proven.
+**Honesty check - what runs today:** The decision layer and the movement detector are real and tested (42 tests), and the observation service **runs on the CM5 test bench**: while the system is armed it looks at tiny grey frames of the real IP cameras and reports movement weighed with the radars. It cannot tell a person from a cat or a branch: **there is no detection model yet**, and nothing has run on the Jetson, TensorRT or an RTSP stream decoded there.
 
 ---
 
+## 📋 At a glance
+
+| | |
+|---|---|
+| Version | `0.2.5` |
+| Maturity | Established |
+| Tests | 42 (`python -m unittest discover -s tests`) |
+| Stack | Python 3.11+ / Docker |
+| On real hardware | Running as a service on the CM5 test bench with the real IP cameras (movement only); nothing on a Jetson |
+
 ## 🎯 Overview
 
+* **The observation service:** `python -m armor_server_ai.service` asks nothing of the server and is asked of nothing: while the system is **armed** it takes one tiny grey frame (64 x 36, from the camera's stream, never stored) of each camera every few seconds, measures how much of the picture moved and, when radar tracks agree, reports it to ARMOR-SERVER with its token.
+* **Zones of the picture to ignore:** the server hands it the ignore zones of each camera and the pixels inside them count for nothing (a tree that waves, a road); a picture that is almost all ignored is not judged and at most sixteen zones count.
 * **Day/night profile with hysteresis:** low-light below 30 lux, back to daylight only above 60 lux and never twice within 30 s, so dusk cannot make it flap.
-* **Explainable fusion:** each detection and the radar tracks give a severity (`ignore`, `review`, `high`) with the reasons behind it. A person seen at 80 % or more **and** a radar track is `high`; low light lowers only the review bar; a detection older than 10 s is ignored.
+* **Explainable fusion:** each detection or movement and the radar tracks give a severity (`ignore`, `review`, `high`) with the reasons behind it; strong movement **and** a radar track agree is `high`, weaker movement is a `review`.
 * **Recommendations only:** a decision always carries `authorizes_action = false`. The central server authenticates and authorises every action.
 * **Checksum-verified engines:** pre-built TensorRT engines are accepted only if present, non-empty and, with an `engines.json`, matching their SHA-256. Nothing is compiled or downloaded.
-* **JSONL worker:** numbered, explained results; a bad line reports its number and never stops the stream.
+* **A service that says what is wrong:** it reports every new problem when it changes (`unreachable`, `unauthorized`…) and *the server answers again* when it is over; a JSONL worker keeps numbered, explained results and a bad line never stops the stream.
+
+## 🧩 Role in A.R.M.O.R.
+
+ARMOR-SERVER-AI is the part that watches the cameras for movement while the house is armed. It never acts: it tells [ARMOR-SERVER](https://github.com/JuanenRac/ARMOR-SERVER) what it saw and why (movement and radar tracks agreeing is `high`), and the server decides what to do. A model that recognises a person, run on a Jetson, is the next step; [ARMOR-VISION](https://github.com/JuanenRac/ARMOR-VISION) holds the zones, masks and rules that model will use.
 
 ## 📂 Repository Structure
 
 ```text
 ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile, policy, engine_registry, cli
-├── tests/
-└── docs/INFERENCE_BOUNDARY.md
+├── src/armor_server_ai/   profile (day/night), policy (fusion), motion (movement and ignore zones), engine_registry, service (the observation service), cli
+├── tests/                 42 tests
+└── docs/                  INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
 ## 🛠️ Development Environment
 
+**Requirements:** Python 3.11+, optional: a Jetson Orin NX with TensorRT engines (not proven)
+
 ```powershell
 $env:PYTHONPATH="src"
-python -m unittest discover -s tests
+python -m unittest discover -s tests   # 42 tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli
+python -m armor_server_ai.service --once   # one pass of the observation service
 ```
 
-See the [inference boundary](docs/INFERENCE_BOUNDARY.md).
+See the [inference boundary](docs/INFERENCE_BOUNDARY.md) and the [service](docs/SERVICE.md).
 
 ## 🔗 Related Projects
 
@@ -65,12 +86,14 @@ See the [inference boundary](docs/INFERENCE_BOUNDARY.md).
 * **[ARMOR-RADAR](https://github.com/JuanenRac/ARMOR-RADAR)** - Field-node firmware for ESP32-S3 with three radars and its own web panel
 * **[ARMOR-SOLAR](https://github.com/JuanenRac/ARMOR-SOLAR)** - Solar inverter and battery protocols and the messages of a gateway node
 * **[ARMOR-ELECTRICAL](https://github.com/JuanenRac/ARMOR-ELECTRICAL)** - Electrical node: meters, the message of the network's readings and the rules for switching
+* **[ARMOR-ALARM](https://github.com/JuanenRac/ARMOR-ALARM)** - Alarm node and panel: zones, arming, delays, siren and PIN, with the server or without it
 * **[ARMOR-HMI](https://github.com/JuanenRac/ARMOR-HMI)** - Touch panel: the state of the system on a wall screen, arming and acknowledging, and the home of the voice assistant
 * **[ARMOR-NETWORK](https://github.com/JuanenRac/ARMOR-NETWORK)** - The local network: its devices, the internet and what changes
 * **[ARMOR-SERVER](https://github.com/JuanenRac/ARMOR-SERVER)** - Central coordinator: telemetry, alarms, devices, solar readings and cameras
 * **[ARMOR-STUDIO](https://github.com/JuanenRac/ARMOR-STUDIO)** - Web console: cameras, radar, alarms, solar energy and the 2D/3D site designer
 * **[ARMOR-ANDROID-CONTROL](https://github.com/JuanenRac/ARMOR-ANDROID-CONTROL)** - Android operator client with a live 2D/3D radar
 * **ARMOR-SERVER-AI** (this repository) - Visual inference policy that explains its decisions and never actuates
+* **[ARMOR-VISION](https://github.com/JuanenRac/ARMOR-VISION)** - Camera zones, masks and detection rules for the Jetson Orin NX
 * **[ARMOR-VOICE-AI](https://github.com/JuanenRac/ARMOR-VOICE-AI)** - Offline voice intents with a confirmation that cannot be forged
 * **[ARMOR-HARDWARE](https://github.com/JuanenRac/ARMOR-HARDWARE)** - Enclosures, electronics and the bench acceptance matrix
 * **[ARMOR-DEVOPS](https://github.com/JuanenRac/ARMOR-DEVOPS)** - Deployment, the CM5 test bench, backup and TLS

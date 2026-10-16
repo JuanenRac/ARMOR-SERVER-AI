@@ -12,7 +12,7 @@
     "MQTT"
   ],
   "deployment_target": "NVIDIA Jetson Orin NX",
-  "maturity": "functional",
+  "maturity": "established",
   "family": "Core Services",
   "parent": "ARMOR-SERVER",
   "native_version": "0.2.5",
