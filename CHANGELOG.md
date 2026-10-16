@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.5] - Zones of the picture to ignore
+
+- The movement detector can leave out parts of a camera's picture: the server hands it the ignore zones of each camera (rectangles as fractions of the picture) and the pixels inside them count for nothing, neither the changes, nor the median that is taken away, nor the share that is measured.
+- A picture that is almost all ignored (under about three per cent left) is not judged, and a zone that is not a rectangle inside the picture is left out; at most sixteen zones count.
+- Tests hold the mask, a tree that waves inside a zone, a person outside it (a bigger share of the smaller picture) and the limits.
+
 ## [0.2.4] - Motion and service fixes
 
 - Fixes in the motion handling and in the service, with tests.

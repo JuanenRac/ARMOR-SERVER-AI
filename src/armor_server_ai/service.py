@@ -29,7 +29,7 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Callable, Protocol
 
-from .motion import FRAME_BYTES, changed_ratio, estimate_lux, motion_confidence
+from .motion import FRAME_BYTES, changed_ratio, estimate_lux, mask_from_zones, motion_confidence
 from .policy import VisualObservation, decide
 from .profile import ProfileSelector
 
@@ -103,14 +103,14 @@ class Sighting:
     radar_tracks: int
 
 
-def look(state: CameraState, camera_id: str, frame: bytes, now_s: float, radar_tracks: int, node_lux: float | None, confirm_frames: int, cooldown_s: float) -> Sighting | None:
+def look(state: CameraState, camera_id: str, frame: bytes, now_s: float, radar_tracks: int, node_lux: float | None, confirm_frames: int, cooldown_s: float, ignore: bytes | None = None) -> Sighting | None:
     """Weigh one frame of a camera against the one before; a Sighting when a movement is worth telling the server, else None."""
     previous, state.previous = state.previous, frame
     lux = node_lux if node_lux is not None else estimate_lux(frame)
     profile = state.selector.update(lux, now_s)
     if previous is None:
         return None
-    ratio = changed_ratio(previous, frame)
+    ratio = changed_ratio(previous, frame, mask=ignore)
     if ratio > GLOBAL_CHANGE_RATIO:   # the light changed, not what is in front of the camera
         state.streak = 0
         return None
@@ -174,7 +174,9 @@ class Watcher:
             tracks = sum(int(node.get("targets") or 0) for node in nodes)
             lux_values = [float(node["lux"]) for node in nodes if isinstance(node.get("lux"), (int, float))]
             node_lux = min(lux_values) if lux_values else None
-            sighting = look(self._cameras.setdefault(camera_id, CameraState()), camera_id, frame, self._clock(), tracks, node_lux, self._confirm, self._cooldown)
+            # the zones of the picture that the person said to ignore (a tree, a road, a screen): the server sends them with the camera
+            ignore = mask_from_zones(cameras[camera_id].get("ignore"))
+            sighting = look(self._cameras.setdefault(camera_id, CameraState()), camera_id, frame, self._clock(), tracks, node_lux, self._confirm, self._cooldown, ignore)
             if sighting is None:
                 continue
             report = {"camera_id": sighting.camera_id, "severity": sighting.severity, "reasons": list(sighting.reasons), "profile": sighting.profile, "motion": sighting.motion, "radar_tracks": sighting.radar_tracks}
