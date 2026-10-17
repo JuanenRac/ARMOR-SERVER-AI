@@ -42,7 +42,10 @@ def process(lines: Iterable[str], radar_tracks: int, selector: ProfileSelector, 
                 label=str(item["label"]), confidence=float(item["confidence"]), lux=lux, profile=profile,
                 camera_id=str(item.get("camera_id", "")), age_s=float(item.get("age_s", 0.0)),
             )
-            decision = decide(observation, int(item.get("radar_tracks", radar_tracks)))
+            tracks = item.get("radar_tracks", radar_tracks)
+            if isinstance(tracks, bool) or not isinstance(tracks, int):
+                raise ValueError("radar_tracks must be a whole number")
+            decision = decide(observation, tracks)
             yield {"line": number, "severity": decision.severity, "reasons": list(decision.reasons), "profile": profile, "authorizes_action": decision.authorizes_action}
         except (KeyError, TypeError, ValueError) as error:  # json.JSONDecodeError is a ValueError
             message = f"missing field {error}" if isinstance(error, KeyError) else str(error)

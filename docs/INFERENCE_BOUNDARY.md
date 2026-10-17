@@ -20,7 +20,11 @@ behind it and `authorizes_action = False`.
 
 * `high`: a person seen with at least 80 % confidence **and** at least one radar track.
 * `review`: a confident detection (55 % in daylight, 45 % in low light, where a camera
-  is less certain) or a radar track without a visual match.
+  is less certain) or a radar track without a visual match. A plain `motion` seen by
+  the movement detector counts a radar track only when the movement is at least 30 %
+  sure (about 3 % of the picture): a leaf on a camera and a person elsewhere in the
+  house are not one event. Over a camera with no `nodes` in the server's design,
+  every online radar node counts, so say which nodes cover each camera.
 * `ignore`: anything else, and any detection older than 10 seconds.
 
 The policy only recommends. It cannot switch lights, sound sirens or move

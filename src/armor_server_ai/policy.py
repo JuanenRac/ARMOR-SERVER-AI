@@ -22,6 +22,9 @@ MAX_AGE_S = 10.0
 # deserves a human look; the bar for "high" (person plus radar) does not move.
 REVIEW_CONFIDENCE = {"daylight": 0.55, "low-light": 0.45}
 HIGH_CONFIDENCE = 0.80
+#: A radar track makes a review of a plain movement on the camera only when the movement is at least this sure (about 3 % of the picture): one leaf and a person somewhere
+#: else in the house are not the same event.
+MOTION_RADAR_BAR = 0.30
 
 
 @dataclass(frozen=True)
@@ -77,7 +80,10 @@ def decide(observation: VisualObservation, radar_tracks: int) -> Decision:
     reasons: list[str] = []
     if observation.confidence >= review_bar:
         reasons.append(f"{observation.label} seen with {observation.confidence:.0%} confidence (review bar {review_bar:.0%} in {observation.profile})")
-    if radar_tracks:
+    if radar_tracks and observation.label == "motion":
+        if observation.confidence >= MOTION_RADAR_BAR:
+            reasons.append(f"movement on the camera ({observation.confidence:.0%}) and {radar_tracks} radar track(s) on the nodes that cover it")
+    elif radar_tracks:
         reasons.append(f"{radar_tracks} radar track(s) without a confident visual match")
     if reasons:
         return Decision("review", tuple(reasons))

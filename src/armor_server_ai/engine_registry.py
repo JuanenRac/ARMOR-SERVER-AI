@@ -6,7 +6,9 @@ A directory must hold a non-empty ``daylight.engine`` and ``low_light.engine``.
 When it also holds ``engines.json`` (``{"daylight": "<sha256>", "low_light":
 "<sha256>"}``) every engine must match its recorded SHA-256, so a swapped or
 corrupted engine is refused instead of being loaded onto the GPU. Without a
-manifest the engines are accepted but reported as *unverified*.
+manifest they are refused too, unless the caller says `require_manifest=False`, and
+then they are reported as *unverified*. The file can still change between the check
+and the load: whoever loads should read the bytes it checked.
 """
 
 from __future__ import annotations
@@ -58,14 +60,20 @@ def _read_manifest(root: Path) -> dict[str, str] | None:
     return data
 
 
-def discover_engines(root: Path) -> EngineSet:
+def discover_engines(root: Path, require_manifest: bool = True) -> EngineSet:
+    """The engines of a directory. By default a manifest is required (an engine nobody vouched for is not loaded onto the GPU); `require_manifest=False` accepts them as unverified."""
     if not root.is_dir():
         raise EngineRegistryError("engine directory does not exist")
     paths = {name: root / f"{name}.engine" for name in NAMES}
     missing = [path.name for path in paths.values() if not path.is_file() or path.stat().st_size == 0]
     if missing:
         raise EngineRegistryError("missing non-empty engine files: " + ", ".join(missing))
+    links = [path.name for path in paths.values() if path.is_symlink()]
+    if links:
+        raise EngineRegistryError("an engine must be a regular file, not a link: " + ", ".join(links))
     manifest = _read_manifest(root)
+    if manifest is None and require_manifest:
+        raise EngineRegistryError(f"{MANIFEST} is missing: the engines are not verified")
     if manifest is not None:
         wrong = [f"{name}.engine" for name, path in paths.items() if _sha256(path) != manifest[name]]
         if wrong:

@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.6] - A hiccup of the server no longer silences a camera, and odd answers do not end the service
+
+- **An observation the server never received** (it was restarting, a limit, a timeout) gives the cooldown back: the next movement is told at once instead of after a minute of silence.
+- **A camera that fails to answer keeps what is remembered of it** (its cooldown and its day/night choice); only the previous picture is forgotten. A failure of a camera or of the picture is said once on stderr, and said again when it comes back.
+- **The service survives whatever the server sends:** a context that is not an object, nodes that are not objects, targets as a list, and one camera that cannot be judged no longer end the pass for all the others or the process; `--once` says the problem in a line instead of a traceback.
+- **A radar track no longer turns a trace of movement into a review:** a plain movement counts a radar track only when it is at least 30 % sure; the reason now says what is true.
+- **The server limit on pictures is respected:** the pass is spaced out so that many cameras never exceed 200 pictures a minute.
+- `ARMOR_AI_SERVER_URL` must be `https://` or `http://` to this same machine; answers are read up to a limit.
+- Engines need an `engines.json` by default (`require_manifest=False` to accept them unverified) and a link is not an engine; the JSONL worker refuses a `radar_tracks` that is not a whole number; the `armor-ai` command runs the service.
+- The manifest says what this is (functional movement service for the CM5, not a Jetson inference service), the documents say three routes and how the failures are reported. Tests: 46 (before 42).
+
 ## [0.2.5] - Zones of the picture to ignore
 
 - The movement detector can leave out parts of a camera's picture: the server hands it the ignore zones of each camera (rectangles as fractions of the picture) and the pixels inside them count for nothing, neither the changes, nor the median that is taken away, nor the share that is measured.

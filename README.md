@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-42%20passing-2ea44f.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Version-0.2.5-0f6cbd.svg" alt="Version">
-  <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
+  <img src="https://img.shields.io/badge/Tests-46%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Version-0.2.6-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
 </p>
 
 ---
 
-**Honesty check - what runs today:** The decision layer and the movement detector are real and tested (42 tests), and the observation service **runs on the CM5 test bench**: while the system is armed it looks at tiny grey frames of the real IP cameras and reports movement weighed with the radars. It cannot tell a person from a cat or a branch: **there is no detection model yet**, and nothing has run on the Jetson, TensorRT or an RTSP stream decoded there.
+**Honesty check - what runs today:** The decision layer and the movement detector are real and tested (46 tests), and the observation service **runs on the CM5 test bench**: while the system is armed it looks at tiny grey frames of the real IP cameras and reports movement weighed with the radars. It cannot tell a person from a cat or a branch: **there is no detection model yet**, and nothing has run on the Jetson, TensorRT or an RTSP stream decoded there.
 
 ---
 
@@ -36,15 +36,15 @@
 
 | | |
 |---|---|
-| Version | `0.2.5` |
-| Maturity | Established |
-| Tests | 42 (`python -m unittest discover -s tests`) |
-| Stack | Python 3.11+ / Docker |
+| Version | `0.2.6` |
+| Maturity | Functional |
+| Tests | 46 (`python -m unittest discover -s tests`) |
+| Stack | Python 3.11+ (standard library) |
 | On real hardware | Running as a service on the CM5 test bench with the real IP cameras (movement only); nothing on a Jetson |
 
 ## 🎯 Overview
 
-* **The observation service:** `python -m armor_server_ai.service` asks nothing of the server and is asked of nothing: while the system is **armed** it takes one tiny grey frame (64 x 36, from the camera's stream, never stored) of each camera every few seconds, measures how much of the picture moved and, when radar tracks agree, reports it to ARMOR-SERVER with its token.
+* **The observation service:** `python -m armor_server_ai.service` is never called by the server (it asks the server, with its own token): while the system is **armed** it takes one tiny grey frame (64 x 36, from the camera's stream, never stored) of each camera every few seconds, measures how much of the picture moved and, when radar tracks agree, reports it to ARMOR-SERVER with its token.
 * **Zones of the picture to ignore:** the server hands it the ignore zones of each camera and the pixels inside them count for nothing (a tree that waves, a road); a picture that is almost all ignored is not judged and at most sixteen zones count.
 * **Day/night profile with hysteresis:** low-light below 30 lux, back to daylight only above 60 lux and never twice within 30 s, so dusk cannot make it flap.
 * **Explainable fusion:** each detection or movement and the radar tracks give a severity (`ignore`, `review`, `high`) with the reasons behind it; strong movement **and** a radar track agree is `high`, weaker movement is a `review`.
@@ -61,7 +61,7 @@ ARMOR-SERVER-AI is the part that watches the cameras for movement while the hous
 ```text
 ARMOR-SERVER-AI/
 ├── src/armor_server_ai/   profile (day/night), policy (fusion), motion (movement and ignore zones), engine_registry, service (the observation service), cli
-├── tests/                 42 tests
+├── tests/                 46 tests
 └── docs/                  INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
@@ -71,7 +71,7 @@ ARMOR-SERVER-AI/
 
 ```powershell
 $env:PYTHONPATH="src"
-python -m unittest discover -s tests   # 42 tests
+python -m unittest discover -s tests   # 46 tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli
 python -m armor_server_ai.service --once   # one pass of the observation service
 ```

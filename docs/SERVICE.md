@@ -23,7 +23,7 @@ a camera out by not giving it a stream in the server.
 
 ## Safety
 
-Its token (`ARMOR_AI_TOKEN`) opens four routes of the server and nothing else; not even an operator's token opens them, and this one cannot arm, disarm or read anything. It
-holds no camera address or password. A failure of the server, of a camera or of FFmpeg is said once on stderr and tried again; nothing here can take the house down.
+Its token (`ARMOR_AI_TOKEN`) opens three routes of the server (the context, one picture of a camera and the report of an observation) and nothing else; not even an operator's token opens them, and this one cannot arm, disarm or read anything. It
+holds no camera address or password. A failure of the server or of a camera (its picture, FFmpeg) is said once on stderr and tried again, whatever shape the answer has; nothing here can take the house down. `ARMOR_AI_SERVER_URL` must be `https://` or `http://` to this same machine (the token must not cross a network in clear). With many cameras the pass is spaced out so the server's limit of 200 pictures a minute is never reached.
 
 On the bench it is installed by `ARMOR-DEVOPS/scripts/install_cm5.sh --with-ai`.

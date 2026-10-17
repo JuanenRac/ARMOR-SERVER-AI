@@ -2,20 +2,20 @@
   "schema_version": "1.0",
   "ecosystem": "A.R.M.O.R.",
   "name": "ARMOR-SERVER-AI",
-  "version": "0.2.5",
-  "role": "Jetson visual-inference service",
-  "stack": "Python 3.11+ / Docker",
+  "version": "0.2.6",
+  "role": "Camera movement observation service (CM5 today, Jetson planned)",
+  "stack": "Python 3.11+ (standard library)",
   "technologies": [
-    "TensorRT",
-    "OpenCV",
-    "RTSP",
-    "MQTT"
+    "HTTP",
+    "Grey-frame movement detection",
+    "Radar fusion policy",
+    "TensorRT engine registry (planned)"
   ],
-  "deployment_target": "NVIDIA Jetson Orin NX",
-  "maturity": "established",
+  "deployment_target": "CM5 test bench (systemd); NVIDIA Jetson Orin NX planned",
+  "maturity": "functional",
   "family": "Core Services",
   "parent": "ARMOR-SERVER",
-  "native_version": "0.2.5",
+  "native_version": "0.2.6",
   "build": "python -m unittest discover -s tests",
-  "notes": "Decides and explains; never actuates. Day/night profile selection with hysteresis, an explainable visual/radar fusion policy and a checksum-verified engine registry. Camera and TensorRT integration require Jetson validation."
+  "notes": "Decides and explains; never actuates. Day/night profile selection with hysteresis, an explainable visual/radar fusion policy and a checksum-verified engine registry. It watches the cameras for movement on the CM5 test bench; a person detector and TensorRT need Jetson validation."
 }

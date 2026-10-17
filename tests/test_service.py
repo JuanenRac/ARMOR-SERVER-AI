@@ -40,7 +40,9 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(decide(strong, 1).severity, "high")
         self.assertEqual(decide(strong, 0).severity, "review")
         self.assertEqual(decide(VisualObservation(label="motion", confidence=0.2, lux=100.0), 0).severity, "ignore")
-        self.assertEqual(decide(VisualObservation(label="motion", confidence=0.2, lux=100.0), 2).severity, "review")
+        # a little movement is not made a review by a radar track somewhere else in the house; a clear one is
+        self.assertEqual(decide(VisualObservation(label="motion", confidence=0.2, lux=100.0), 2).severity, "ignore")
+        self.assertEqual(decide(VisualObservation(label="motion", confidence=0.35, lux=100.0), 2).severity, "review")
 
 
 class Server:
@@ -120,6 +122,47 @@ class WatcherTests(unittest.TestCase):
         watcher.run_once()
         watcher.run_once()
         self.assertEqual([item["camera_id"] for item in server.told], ["cam-b"])
+
+    def test_an_observation_the_server_never_got_does_not_silence_the_camera(self):
+        server = Server(tracks=1, lux=200.0)
+        server.frames["cam-gate"] = [frame(100), frame(100, moved=400), frame(100), frame(100, moved=400)]
+        refuse = [True]
+        original = server.observe
+
+        def observe(report):
+            if refuse[0]:
+                refuse[0] = False
+                raise ServerError(0, "unreachable")
+            return original(report)
+        server.observe = observe
+        clock = iter(range(0, 1000, 5))
+        watcher = Watcher(server, confirm_frames=1, cooldown_s=60.0, clock=lambda: next(clock))
+        for _ in range(4):
+            watcher.run_once()
+        self.assertEqual(len(server.told), 1, "the second movement is told at once: the first never arrived, so there is no cooldown to wait for")
+
+    def test_a_camera_that_fails_keeps_its_cooldown_and_odd_data_does_not_end_the_pass(self):
+        server = Server(tracks=1, lux=200.0, cameras=("cam-a", "cam-b"))
+        server.frames["cam-a"] = [frame(100), frame(100, moved=400)]
+        server.frames["cam-b"] = [frame(100), frame(100, moved=400)]
+        base = server.context
+        server.context = lambda: {**base(), "nodes": [{"id": "radar", "online": True, "targets": [{}, {}]}, "not a node", {"id": "x", "online": True, "targets": "many"}]}
+        watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+        watcher.run_once()
+        watcher.run_once()
+        self.assertEqual(sorted(item["camera_id"] for item in server.told), ["cam-a", "cam-b"])
+        self.assertEqual(server.told[0]["radar_tracks"], 2, "a list of targets counts its members")
+        self.assertEqual(watcher.camera_count, 2)
+
+    def test_the_server_address_is_checked_and_the_pass_is_spaced_for_many_cameras(self):
+        from armor_server_ai.service import check_server_url, min_interval_s
+        self.assertEqual(check_server_url("http://127.0.0.1:18080"), "http://127.0.0.1:18080")
+        self.assertEqual(check_server_url("https://armor.example:18080"), "https://armor.example:18080")
+        for bad in ("http://192.168.0.180:18080", "file:///etc/passwd", "ftp://127.0.0.1"):
+            with self.assertRaises(SystemExit):
+                check_server_url(bad)
+        self.assertGreater(min_interval_s(60), 3.0)
+        self.assertLess(min_interval_s(5), 3.0)
 
     def test_the_first_frame_after_being_armed_has_nothing_old_to_be_compared_with(self):
         server = Server(tracks=1, lux=200.0)

@@ -38,9 +38,24 @@ class RegistryTests(unittest.TestCase):
         with self.assertRaises(EngineRegistryError):
             discover_engines(self.root / "absent")
 
-    def test_without_a_manifest_the_engines_are_accepted_but_unverified(self):
+    def test_without_a_manifest_the_engines_are_refused_unless_asked_otherwise(self):
         self.engines()
-        self.assertFalse(discover_engines(self.root).verified)
+        with self.assertRaises(EngineRegistryError):
+            discover_engines(self.root)
+        self.assertFalse(discover_engines(self.root, require_manifest=False).verified)
+
+    def test_a_link_is_not_an_engine(self):
+        self.engines()
+        self.manifest()
+        target = self.root / "real.bin"
+        target.write_bytes(b"day-engine")
+        (self.root / "daylight.engine").unlink()
+        try:
+            (self.root / "daylight.engine").symlink_to(target)
+        except (OSError, NotImplementedError):
+            self.skipTest("links are not available here")
+        with self.assertRaises(EngineRegistryError):
+            discover_engines(self.root)
 
     def test_a_matching_manifest_verifies_the_engines(self):
         self.engines()
