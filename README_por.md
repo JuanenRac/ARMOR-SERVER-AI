@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
   <img src="https://img.shields.io/badge/Tests-46%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.6-0f6cbd.svg" alt="Version">
-  <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
+  <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
@@ -37,7 +37,7 @@
 | | |
 |---|---|
 | Versão | `0.2.6` |
-| Maturidade | Funcional |
+| Maturidade | Estabelecido |
 | Testes | 46 (`python -m unittest discover -s tests`) |
 | Tecnologia | Python 3.11+ (standard library) |
 | Em hardware real | A correr como serviço na bancada de testes do CM5 com as câmaras IP reais (só movimento); nada num Jetson |

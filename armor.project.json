@@ -12,7 +12,7 @@
     "TensorRT engine registry (planned)"
   ],
   "deployment_target": "CM5 test bench (systemd); NVIDIA Jetson Orin NX planned",
-  "maturity": "functional",
+  "maturity": "established",
   "family": "Core Services",
   "parent": "ARMOR-SERVER",
   "native_version": "0.2.6",

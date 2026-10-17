@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
   <img src="https://img.shields.io/badge/Tests-46%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.6-0f6cbd.svg" alt="Version">
-  <img src="https://img.shields.io/badge/Maturity-functional-00E5FF.svg" alt="Maturity">
+  <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
@@ -37,7 +37,7 @@
 | | |
 |---|---|
 | 版本 | `0.2.6` |
-| 成熟度 | 可用 |
+| 成熟度 | 成熟 |
 | 测试 | 46 (`python -m unittest discover -s tests`) |
 | 技术栈 | Python 3.11+ (standard library) |
 | 真实硬件 | 在 CM5 测试台上用真实 IP 摄像头作为服务运行（仅移动）；Jetson 上没有任何东西 |
