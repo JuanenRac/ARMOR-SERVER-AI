@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A camera that names no nodes counts none:** when the entry of a camera in the server's design has no `nodes`, no radar track and no light sensor of the house is counted for it (before, every online node was). The service says so once in its log, the report to the server carries the reason, and the documents ask for the design to list the nodes that cover each camera. Tests: 80 (before 77).
 - The repository has a security policy, a code of conduct, a contributing guide and a support file.
 - The banner follows the animated style of the ecosystem banners, with the name, the kind and the technologies of the project.
 - The tests find the source folder by themselves wherever they are started from (two of them failed unless the path was set by hand), and a ruff configuration (errors, unused names and whitespace) is in `pyproject.toml` with the code clean under it.

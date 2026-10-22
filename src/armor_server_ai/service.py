@@ -112,6 +112,10 @@ class HttpServer:
         return json.loads(self._call("POST", "/api/v1/ai/observations", report))
 
 
+#: Why a camera with no `nodes` in the site design has no radar track counted for it (it is also in the reasons of what is told to the server).
+NO_NODES_REASON = "radar and light sensors not counted: the site design lists no nodes for this camera"
+
+
 @dataclass
 class CameraState:
     """What is remembered about one camera between passes."""
@@ -181,12 +185,21 @@ class Watcher:
         self._cameras: dict[str, CameraState] = {}
         self._problems: dict[str, str] = {}   # what was last said about each camera, so it is said again only when it changes
         self.camera_count = 0
+        self._undeclared: dict[str, bool] = {}   # per camera: whether it was last said that it names no nodes
 
     def _say_camera(self, camera_id: str, problem: str) -> None:
         if self._problems.get(camera_id, "") == problem:
             return
         self._problems[camera_id] = problem
         print(f"armor-ai: camera {camera_id}: {problem}" if problem else f"armor-ai: camera {camera_id} answers again", file=sys.stderr, flush=True)
+
+    def _say_nodes(self, camera_id: str, declared: bool) -> None:
+        """Says once (and again if it changes) why a camera has no radar or light sensor counted for it."""
+        if self._undeclared.get(camera_id) == (not declared):
+            return
+        self._undeclared[camera_id] = not declared
+        if not declared:
+            print(f"armor-ai: camera {camera_id}: {NO_NODES_REASON}; list the radar nodes that cover it in `nodes` of the camera in the site design", file=sys.stderr, flush=True)
 
     def run_once(self) -> list[dict]:
         """One pass over the cameras; what was told to the server, as dicts."""
@@ -235,9 +248,12 @@ class Watcher:
         return told
 
     def _watch_camera(self, camera_id: str, camera: dict, frame: bytes, online: list[dict]) -> list[dict]:
-        # The radar nodes and the light that count for this camera are the ones the server says cover it (`nodes` in its entry); when it does not say, all of them do (as before).
+        # The radar nodes and the light that count for this camera are the ones the server says cover it (`nodes` in its entry). A camera whose entry names none counts NO node: a radar
+        # track on the other side of the house is not evidence about this camera, so the site design has to say which nodes cover each camera.
         covering = camera.get("nodes")
-        nodes = [node for node in online if (node.get("id") or node.get("node_id")) in covering] if isinstance(covering, list) and covering else online
+        declared = isinstance(covering, list) and any(isinstance(item, str) and item for item in covering)
+        nodes = [node for node in online if (node.get("id") or node.get("node_id")) in covering] if declared else []
+        self._say_nodes(camera_id, declared)
         tracks = sum(_count(node.get("targets")) for node in nodes)
         lux_values = [float(node["lux"]) for node in nodes if isinstance(node.get("lux"), (int, float))]
         node_lux = min(lux_values) if lux_values else None
@@ -247,7 +263,8 @@ class Watcher:
         sighting = look(state, camera_id, frame, self._clock(), tracks, node_lux, self._confirm, self._cooldown, ignore)
         if sighting is None:
             return []
-        report = {"camera_id": sighting.camera_id, "severity": sighting.severity, "reasons": list(sighting.reasons), "profile": sighting.profile, "motion": sighting.motion, "radar_tracks": sighting.radar_tracks}
+        reasons = list(sighting.reasons) + ([] if declared else [NO_NODES_REASON])
+        report = {"camera_id": sighting.camera_id, "severity": sighting.severity, "reasons": reasons, "profile": sighting.profile, "motion": sighting.motion, "radar_tracks": sighting.radar_tracks}
         try:
             answer = self._server.observe(report)
         except ServerError as error:

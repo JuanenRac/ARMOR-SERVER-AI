@@ -49,14 +49,14 @@ class PolicyTests(unittest.TestCase):
 class Server:
     """A stand-in for ARMOR-SERVER: the context, the frames of the cameras, and what is told."""
 
-    def __init__(self, mode="armed", tracks=0, lux=None, cameras=("cam-gate",)):
-        self.mode, self.tracks, self.lux, self.cameras = mode, tracks, lux, list(cameras)
+    def __init__(self, mode="armed", tracks=0, lux=None, cameras=("cam-gate",), declare=True):
+        self.mode, self.tracks, self.lux, self.cameras, self.declare = mode, tracks, lux, list(cameras), declare
         self.frames: dict[str, list[bytes]] = {name: [] for name in cameras}
         self.told: list[dict] = []
         self.failing: set[str] = set()
 
     def context(self):
-        return {"mode": self.mode, "nodes": [{"id": "radar", "online": True, "targets": self.tracks, "lux": self.lux}], "cameras": [{"id": name, "name": name} for name in self.cameras]}
+        return {"mode": self.mode, "nodes": [{"id": "radar", "online": True, "targets": self.tracks, "lux": self.lux}], "cameras": [{"id": name, "name": name, **({"nodes": ["radar"]} if self.declare else {})} for name in self.cameras]}
 
     def frame(self, camera_id):
         if camera_id in self.failing:
@@ -114,6 +114,42 @@ class WatcherTests(unittest.TestCase):
         watcher.run_once()
         watcher.run_once()
         self.assertEqual([(item["radar_tracks"], item["profile"]) for item in server.told], [(0, "daylight")], "the 3 targets of the other side of the house are not this camera's")
+
+    def test_a_camera_that_names_no_nodes_counts_no_node_at_all(self):
+        # every node of the house is online with targets, and the light sensor says it is dark: none of it is evidence about a camera the site design did not connect to a node
+        for entry in ({"id": "cam-a"}, {"id": "cam-a", "nodes": []}, {"id": "cam-a", "nodes": "radar"}, {"id": "cam-a", "nodes": [None, ""]}):
+            server = Server(tracks=5, lux=1.0, cameras=("cam-a",), declare=False)
+            base = server.context
+            server.context = lambda base=base, entry=entry: {**base(), "cameras": [entry]}
+            server.frames["cam-a"] = [frame(100), frame(100, moved=230)]
+            watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+            watcher.run_once()
+            watcher.run_once()
+            self.assertEqual([(item["radar_tracks"], item["profile"]) for item in server.told], [(0, "daylight")], entry)
+
+    def test_a_camera_with_no_nodes_says_why_in_what_it_tells_and_in_the_log_once(self):
+        import contextlib
+        import io
+        server = Server(tracks=5, lux=200.0, cameras=("cam-a",), declare=False)
+        server.frames["cam-a"] = [frame(100), frame(100, moved=230), frame(100), frame(100, moved=230)]
+        watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+        captured = io.StringIO()
+        with contextlib.redirect_stderr(captured):
+            for _ in range(4):
+                watcher.run_once()
+        self.assertTrue(server.told)
+        self.assertTrue(all("lists no nodes for this camera" in " ".join(item["reasons"]) for item in server.told))
+        self.assertEqual(captured.getvalue().count("lists no nodes"), 1, "said once, not on every pass")
+        self.assertIn("cam-a", captured.getvalue())
+
+    def test_strong_movement_is_high_only_when_the_radar_that_agrees_is_one_the_camera_names(self):
+        for declare, severity, tracks in ((True, "high", 1), (False, "review", 0)):
+            server = Server(tracks=1, lux=200.0, cameras=("cam-a",), declare=declare)
+            server.frames["cam-a"] = [frame(100), frame(100, moved=400)]
+            watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+            watcher.run_once()
+            watcher.run_once()
+            self.assertEqual([(item["severity"], item["radar_tracks"]) for item in server.told], [(severity, tracks)], declare)
 
     def test_a_camera_that_does_not_answer_is_skipped_and_the_others_go_on(self):
         server = Server(tracks=1, lux=200.0, cameras=("cam-a", "cam-b"))

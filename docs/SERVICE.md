@@ -5,7 +5,7 @@ anything about the house: the server raises the alarm (or not) and every action 
 
 ## What it does, every few seconds, while the system is armed
 
-1. Asks the server for the context (`GET /api/v1/ai/context`): the mode, the radar nodes with their tracks and light, the cameras it can look at. Disarmed, it stops there.
+1. Asks the server for the context (`GET /api/v1/ai/context`): the mode, the radar nodes with their tracks and light, the cameras it can look at (each with the `nodes` that cover it: a camera that lists none has no radar or light counted for it). Disarmed, it stops there.
 2. For each camera takes one grey frame of 64 x 36 pixels (`GET /api/v1/ai/cameras/{id}/frame`; the server takes it from the stream with FFmpeg and keeps nothing) and compares it
    with the previous one: the share of pixels that changed by more than a small threshold is the movement.
 3. Ignores what is not movement: less than 1 % of the picture, or more than 60 % (a light switched on or the exposure changing), and anything seen in fewer than

@@ -23,8 +23,11 @@ behind it and `authorizes_action = False`.
   is less certain) or a radar track without a visual match. A plain `motion` seen by
   the movement detector counts a radar track only when the movement is at least 30 %
   sure (about 3 % of the picture): a leaf on a camera and a person elsewhere in the
-  house are not one event. Over a camera with no `nodes` in the server's design,
-  every online radar node counts, so say which nodes cover each camera.
+  house are not one event. A camera whose entry in the server's design has no `nodes` counts
+  **no** node at all (no radar track, no light sensor): the design has to say which nodes cover
+  each camera. The service says so once in its log, and what it tells the server for that camera
+  carries the reason "radar and light sensors not counted: the site design lists no nodes for this
+  camera".
 * `ignore`: anything else, and any detection older than 10 seconds.
 
 The policy only recommends. It cannot switch lights, sound sirens or move
