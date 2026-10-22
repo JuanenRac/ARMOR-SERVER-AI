@@ -14,3 +14,9 @@ armor-ai = "armor_server_ai.service:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+line-length = 240
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]

@@ -1,11 +1,10 @@
+import _paths  # noqa: F401
 import hashlib
 import json
 import pathlib
-import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, "src")
 from armor_server_ai import EngineRegistryError, discover_engines
 
 

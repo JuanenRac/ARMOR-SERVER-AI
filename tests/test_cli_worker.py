@@ -1,4 +1,5 @@
 """The JSONL policy worker: one answer per line, a bad line never stops it, and what it says is a recommendation, never a command."""
+import _paths  # noqa: F401
 import contextlib
 import io
 import json

@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- The tests find the source folder by themselves wherever they are started from (two of them failed unless the path was set by hand), and a ruff configuration (errors, unused names and whitespace) is in `pyproject.toml` with the code clean under it.
+
 ## [0.2.6] - A hiccup of the server no longer silences a camera, and odd answers do not end the service
 
 - **An observation the server never received** (it was restarting, a limit, a timeout) gives the cooldown back: the next movement is told at once instead of after a minute of silence.

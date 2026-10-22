@@ -1,6 +1,7 @@
+import _paths  # noqa: F401
 import unittest
 
-from armor_server_ai.motion import FRAME_BYTES, FRAME_HEIGHT, FRAME_WIDTH, MAX_ZONES, changed_ratio, mask_from_zones
+from armor_server_ai.motion import FRAME_BYTES, FRAME_WIDTH, MAX_ZONES, changed_ratio, mask_from_zones
 
 
 def frame(value: int = 100, patches=()) -> bytes:

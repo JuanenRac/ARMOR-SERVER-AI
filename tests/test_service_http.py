@@ -1,4 +1,5 @@
 """The service's side of the conversation with ARMOR-SERVER: the HTTP client (against a stand-in server on the loopback of this machine), the settings from the environment and the run loop."""
+import _paths  # noqa: F401
 import contextlib
 import io
 import json

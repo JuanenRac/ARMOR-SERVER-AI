@@ -1,8 +1,9 @@
+import _paths  # noqa: F401
 import unittest
 
 from armor_server_ai.motion import FRAME_BYTES, brightness, changed_ratio, estimate_lux, motion_confidence
 from armor_server_ai.policy import VisualObservation, decide
-from armor_server_ai.service import GLOBAL_CHANGE_RATIO, CameraState, ServerError, Watcher, look
+from armor_server_ai.service import CameraState, ServerError, Watcher, look
 
 
 def frame(value: int, moved: int = 0, to: int = 255) -> bytes:

@@ -1,9 +1,7 @@
+import _paths  # noqa: F401
 import io
 import json
-import sys
 import unittest
-
-sys.path.insert(0, "src")
 
 from armor_server_ai import DAYLIGHT, LOW_LIGHT, Decision, ProfileSelector, VisualObservation, choose_profile, decide, event_severity
 from armor_server_ai.cli import process, run
