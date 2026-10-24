@@ -76,6 +76,7 @@ ARMOR-SERVER-AI は家が警戒中にカメラの動きを見張る部分です�
 ARMOR-SERVER-AI/
 ├── src/armor_server_ai/   profile (day/night), policy (fusion), motion (movement and ignore zones), engine_registry, service (the observation service), cli
 ├── tests/                 80 tests
+├── tools/                 the shared CI checks (armor_ci_validate.py, armor_project_tool.py, _armor_readme_parity.py)
 └── docs/                  INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
