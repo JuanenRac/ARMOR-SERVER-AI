@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-77%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.7-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**Vérification d'honnêteté - ce qui fonctionne aujourd'hui:** La couche de décision et le détecteur de mouvement sont réels et testés (77 tests), et le service d'observation **tourne sur le banc de test CM5** : système armé, il regarde de minuscules images grises des vraies caméras IP et signale le mouvement pesé avec les radars. Il ne distingue pas une personne d'un chat ou d'une branche : **il n'y a pas encore de modèle de détection**, et rien n'a tourné sur le Jetson, TensorRT ni un flux RTSP décodé là.
+**Vérification d'honnêteté - ce qui fonctionne aujourd'hui:** La couche de décision et le détecteur de mouvement sont réels et testés (80 tests), et le service d'observation **tourne sur le banc de test CM5** : système armé, il regarde de minuscules images grises des vraies caméras IP et signale le mouvement pesé avec les radars. Il ne distingue pas une personne d'un chat ou d'une branche : **il n'y a pas encore de modèle de détection**, et rien n'a tourné sur le Jetson, TensorRT ni un flux RTSP décodé là.
 
 ---
 
@@ -38,9 +38,23 @@
 |---|---|
 | Version | `0.2.7` |
 | Maturité | Établi |
-| Tests | 77 (`python -m unittest discover -s tests`) |
+| Tests | 80 (`python -m unittest discover -s tests`) |
 | Technologie | Python 3.11+ (standard library) |
 | Sur matériel réel | Tourne comme service sur le banc de test CM5 avec les vraies caméras IP (mouvement seulement) ; rien sur un Jetson |
+
+## 🚦 État du projet
+
+Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'hui. Elle est écrite d'après ce que le dépôt peut montrer (tests, compilations, exécutions), pas d'après ce qui est prévu.
+
+🟢 Fait et vérifié · 🟡 Fonctionne, avec des limites connues · 🟠 À moitié fait ou pas encore vérifié · 🔴 Pas fait ou ne fonctionne pas
+
+| Domaine | État | Ce que cela veut dire ici |
+|---|---|---|
+| Logiciel | 🟡 | Le détecteur de mouvement et la couche de décision tournent comme service sur le banc d'essai CM5, mais il n'y a pas encore de modèle de détection : il ne distingue pas une personne d'un chat ou d'une branche. |
+| Tests | 🟢 | 80 tests réussissent (`python -m unittest discover -s tests`). |
+| Matériel | 🟡 | Tant que le système est armé, il regarde de minuscules images grises des vraies caméras IP du banc d'essai CM5 ; rien n'a tourné sur un Jetson, avec TensorRT ni sur un flux RTSP décodé. |
+| Intégration | 🟡 | Il rend compte au serveur du banc d'essai du mouvement pondéré par les radars . |
+| Documentation | 🟢 | Huit langues et le journal des modifications sont à jour. |
 
 ## 🎯 Présentation
 
@@ -61,7 +75,7 @@ ARMOR-SERVER-AI est la partie qui surveille le mouvement sur les caméras pendan
 ```text
 ARMOR-SERVER-AI/
 ├── src/armor_server_ai/   profile (day/night), policy (fusion), motion (movement and ignore zones), engine_registry, service (the observation service), cli
-├── tests/                 77 tests
+├── tests/                 80 tests
 └── docs/                  INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
@@ -71,7 +85,7 @@ ARMOR-SERVER-AI/
 
 ```powershell
 $env:PYTHONPATH="src"
-python -m unittest discover -s tests   # 77 tests
+python -m unittest discover -s tests   # 80 tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli
 python -m armor_server_ai.service --once   # one pass of the observation service
 ```

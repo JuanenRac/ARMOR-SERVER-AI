@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-77%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.7-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**正直さのチェック - 今日動いているもの:** 判断レイヤーと動き検出器は実在し、テストされています（77 件）。観察サービスは **CM5 テストベンチで動作**しており、システムの警戒中に実際の IP カメラの小さなグレーフレームを見て、レーダーと照らし合わせた動きを報告します。人と猫や枝の区別はできません。**検出モデルはまだなく**、Jetson、TensorRT、そこでデコードした RTSP ストリームでは何も動いていません。
+**正直さのチェック - 今日動いているもの:** 判断レイヤーと動き検出器は実在し、テストされています（80 件）。観察サービスは **CM5 テストベンチで動作**しており、システムの警戒中に実際の IP カメラの小さなグレーフレームを見て、レーダーと照らし合わせた動きを報告します。人と猫や枝の区別はできません。**検出モデルはまだなく**、Jetson、TensorRT、そこでデコードした RTSP ストリームでは何も動いていません。
 
 ---
 
@@ -38,9 +38,23 @@
 |---|---|
 | バージョン | `0.2.7` |
 | 成熟度 | 確立 |
-| テスト | 77 (`python -m unittest discover -s tests`) |
+| テスト | 80 (`python -m unittest discover -s tests`) |
 | 技術 | Python 3.11+ (standard library) |
 | 実機での確認 | CM5 テストベンチで実際の IP カメラとともにサービスとして動作（動きのみ）。Jetson 上では何もありません |
+
+## 🚦 プロジェクトの状況
+
+各行はこのリポジトリの一部分で、信号は今日どこまで進んでいるかを示します。計画ではなく、リポジトリが示せるもの（テスト、ビルド、実行）に基づいて書かれています。
+
+🟢 完了・検証済み · 🟡 動作する（既知の制限あり） · 🟠 一部のみ、または未検証 · 🔴 未実装または動作しない
+
+| 領域 | 状態 | ここでの意味 |
+|---|---|---|
+| ソフトウェア | 🟡 | 動き検出と判断の層は CM5 テストベンチ上でサービスとして動いていますが、検出モデルはまだありません。人と猫や枝の区別はできません。 |
+| テスト | 🟢 | 80 件のテストが通ります（`python -m unittest discover -s tests`）。 |
+| ハードウェア | 🟡 | 警戒中は、CM5 テストベンチの実際の IP カメラの小さなグレー画像を見ています。Jetson、TensorRT、デコードした RTSP ストリームではまだ何も動かしていません。 |
+| 連携 | 🟡 | レーダーと照合した動きの結果をテストベンチのサーバーに報告します。 |
+| ドキュメント | 🟢 | 8 言語と変更履歴は最新です。 |
 
 ## 🎯 概要
 
@@ -61,7 +75,7 @@ ARMOR-SERVER-AI は家が警戒中にカメラの動きを見張る部分です�
 ```text
 ARMOR-SERVER-AI/
 ├── src/armor_server_ai/   profile (day/night), policy (fusion), motion (movement and ignore zones), engine_registry, service (the observation service), cli
-├── tests/                 77 tests
+├── tests/                 80 tests
 └── docs/                  INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
@@ -71,7 +85,7 @@ ARMOR-SERVER-AI/
 
 ```powershell
 $env:PYTHONPATH="src"
-python -m unittest discover -s tests   # 77 tests
+python -m unittest discover -s tests   # 80 tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli
 python -m armor_server_ai.service --once   # one pass of the observation service
 ```

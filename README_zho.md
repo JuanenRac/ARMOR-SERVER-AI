@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-77%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.7-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**诚实性检查 - 今天真正能运行的部分:** 决策层和移动检测器是真实的并经过测试（77 个测试），观察服务**在 CM5 测试台上运行**：系统布防时，它查看真实 IP 摄像头的微小灰度帧，并报告与雷达对照权衡后的移动。它分不清人、猫或树枝：**目前还没有检测模型**，也没有任何东西在 Jetson、TensorRT 或在那里解码的 RTSP 流上运行过。
+**诚实性检查 - 今天真正能运行的部分:** 决策层和移动检测器是真实的并经过测试（80 个测试），观察服务**在 CM5 测试台上运行**：系统布防时，它查看真实 IP 摄像头的微小灰度帧，并报告与雷达对照权衡后的移动。它分不清人、猫或树枝：**目前还没有检测模型**，也没有任何东西在 Jetson、TensorRT 或在那里解码的 RTSP 流上运行过。
 
 ---
 
@@ -38,9 +38,23 @@
 |---|---|
 | 版本 | `0.2.7` |
 | 成熟度 | 成熟 |
-| 测试 | 77 (`python -m unittest discover -s tests`) |
+| 测试 | 80 (`python -m unittest discover -s tests`) |
 | 技术栈 | Python 3.11+ (standard library) |
 | 真实硬件 | 在 CM5 测试台上用真实 IP 摄像头作为服务运行（仅移动）；Jetson 上没有任何东西 |
+
+## 🚦 项目状态
+
+每一行是本仓库的一个部分，灯号表示它今天做到了哪一步。内容依据仓库能够展示的证据（测试、构建、运行），而不是计划。
+
+🟢 已完成并验证 · 🟡 可用，有已知限制 · 🟠 部分完成或尚未验证 · 🔴 未完成或不可用
+
+| 领域 | 状态 | 在这里的含义 |
+|---|---|---|
+| 软件 | 🟡 | 移动检测器和决策层在 CM5 测试台上作为服务运行，但目前还没有检测模型：它分不清人、猫或树枝。 |
+| 测试 | 🟢 | 80 项测试通过（`python -m unittest discover -s tests`）。 |
+| 硬件 | 🟡 | 系统布防期间，它查看 CM5 测试台上真实 IP 摄像头的微小灰度画面；还没有在 Jetson、TensorRT 或解码后的 RTSP 流上运行过。 |
+| 集成 | 🟡 | 它把结合雷达加权后的移动情况报告给测试台的服务器。 |
+| 文档 | 🟢 | 八种语言和更新日志均为最新。 |
 
 ## 🎯 概述
 
@@ -61,7 +75,7 @@ ARMOR-SERVER-AI 是在住宅布防时观察摄像头移动的部分。它从不�
 ```text
 ARMOR-SERVER-AI/
 ├── src/armor_server_ai/   profile (day/night), policy (fusion), motion (movement and ignore zones), engine_registry, service (the observation service), cli
-├── tests/                 77 tests
+├── tests/                 80 tests
 └── docs/                  INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
@@ -71,7 +85,7 @@ ARMOR-SERVER-AI/
 
 ```powershell
 $env:PYTHONPATH="src"
-python -m unittest discover -s tests   # 77 tests
+python -m unittest discover -s tests   # 80 tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli
 python -m armor_server_ai.service --once   # one pass of the observation service
 ```

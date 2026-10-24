@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-77%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.7-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**Honesty check - what runs today:** The decision layer and the movement detector are real and tested (77 tests), and the observation service **runs on the CM5 test bench**: while the system is armed it looks at tiny grey frames of the real IP cameras and reports movement weighed with the radars. It cannot tell a person from a cat or a branch: **there is no detection model yet**, and nothing has run on the Jetson, TensorRT or an RTSP stream decoded there.
+**Honesty check - what runs today:** The decision layer and the movement detector are real and tested (80 tests), and the observation service **runs on the CM5 test bench**: while the system is armed it looks at tiny grey frames of the real IP cameras and reports movement weighed with the radars. It cannot tell a person from a cat or a branch: **there is no detection model yet**, and nothing has run on the Jetson, TensorRT or an RTSP stream decoded there.
 
 ---
 
@@ -38,9 +38,23 @@
 |---|---|
 | Version | `0.2.7` |
 | Maturity | Established |
-| Tests | 77 (`python -m unittest discover -s tests`) |
+| Tests | 80 (`python -m unittest discover -s tests`) |
 | Stack | Python 3.11+ (standard library) |
 | On real hardware | Running as a service on the CM5 test bench with the real IP cameras (movement only); nothing on a Jetson |
+
+## 🚦 Project status
+
+Each line is one part of this repository and the light says how far it is today. It is written from what the repository can show (tests, builds, runs), not from what is planned.
+
+🟢 Done and verified · 🟡 Works, with known limits · 🟠 Partly done or not verified yet · 🔴 Not done or not working
+
+| Area | State | What it means here |
+|---|---|---|
+| Software | 🟡 | The movement detector and the decision layer run as a service on the CM5 test bench, but there is no detection model yet: it cannot tell a person from a cat or a branch. |
+| Tests | 🟢 | 80 tests pass (`python -m unittest discover -s tests`). |
+| Hardware | 🟡 | While the system is armed it looks at tiny grey frames of the real IP cameras of the CM5 test bench; nothing has run on a Jetson, with TensorRT or on a decoded RTSP stream. |
+| Integration | 🟡 | It reports movement weighed with the radars to the server of the CM5 test bench. |
+| Documentation | 🟢 | Eight languages and the changelog are up to date. |
 
 ## 🎯 Overview
 
@@ -61,7 +75,7 @@ ARMOR-SERVER-AI is the part that watches the cameras for movement while the hous
 ```text
 ARMOR-SERVER-AI/
 ├── src/armor_server_ai/   profile (day/night), policy (fusion), motion (movement and ignore zones), engine_registry, service (the observation service), cli
-├── tests/                 77 tests
+├── tests/                 80 tests
 └── docs/                  INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
@@ -71,7 +85,7 @@ ARMOR-SERVER-AI/
 
 ```powershell
 $env:PYTHONPATH="src"
-python -m unittest discover -s tests   # 77 tests
+python -m unittest discover -s tests   # 80 tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli
 python -m armor_server_ai.service --once   # one pass of the observation service
 ```

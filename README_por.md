@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-77%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.7-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**Verificação de honestidade - o que funciona hoje:** A camada de decisão e o detetor de movimento são reais e estão testados (77 testes), e o serviço de observação **corre na bancada de testes do CM5**: com o sistema armado olha para pequenas imagens cinzentas das câmaras IP reais e comunica o movimento pesado com os radares. Não distingue uma pessoa de um gato ou de um ramo: **ainda não há modelo de deteção**, e nada correu no Jetson, no TensorRT nem num fluxo RTSP descodificado aí.
+**Verificação de honestidade - o que funciona hoje:** A camada de decisão e o detetor de movimento são reais e estão testados (80 testes), e o serviço de observação **corre na bancada de testes do CM5**: com o sistema armado olha para pequenas imagens cinzentas das câmaras IP reais e comunica o movimento pesado com os radares. Não distingue uma pessoa de um gato ou de um ramo: **ainda não há modelo de deteção**, e nada correu no Jetson, no TensorRT nem num fluxo RTSP descodificado aí.
 
 ---
 
@@ -38,9 +38,23 @@
 |---|---|
 | Versão | `0.2.7` |
 | Maturidade | Estabelecido |
-| Testes | 77 (`python -m unittest discover -s tests`) |
+| Testes | 80 (`python -m unittest discover -s tests`) |
 | Tecnologia | Python 3.11+ (standard library) |
 | Em hardware real | A correr como serviço na bancada de testes do CM5 com as câmaras IP reais (só movimento); nada num Jetson |
+
+## 🚦 Estado do projeto
+
+Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É escrita com o que o repositório consegue demonstrar (testes, compilações, execuções), não com o que está previsto.
+
+🟢 Feito e verificado · 🟡 Funciona, com limites conhecidos · 🟠 Feito a meio ou ainda por verificar · 🔴 Por fazer ou a não funcionar
+
+| Área | Estado | O que significa aqui |
+|---|---|---|
+| Software | 🟡 | O detetor de movimento e a camada de decisão funcionam como serviço na bancada de testes CM5, mas ainda não há modelo de deteção: não distingue uma pessoa de um gato ou de um ramo. |
+| Testes | 🟢 | Passam 80 testes (`python -m unittest discover -s tests`). |
+| Hardware | 🟡 | Enquanto o sistema está armado, olha para pequenas imagens cinzentas das câmaras IP reais da bancada de testes CM5; nada funcionou num Jetson, com TensorRT ou sobre um fluxo RTSP descodificado. |
+| Integração | 🟡 | Reporta ao servidor da bancada de testes o movimento ponderado com os radares. |
+| Documentação | 🟢 | Oito idiomas e o registo de alterações estão atualizados. |
 
 ## 🎯 Visão geral
 
@@ -61,7 +75,7 @@ O ARMOR-SERVER-AI é a parte que vigia o movimento nas câmaras enquanto a casa 
 ```text
 ARMOR-SERVER-AI/
 ├── src/armor_server_ai/   profile (day/night), policy (fusion), motion (movement and ignore zones), engine_registry, service (the observation service), cli
-├── tests/                 77 tests
+├── tests/                 80 tests
 └── docs/                  INFERENCE_BOUNDARY.md, SERVICE.md
 ```
 
@@ -71,7 +85,7 @@ ARMOR-SERVER-AI/
 
 ```powershell
 $env:PYTHONPATH="src"
-python -m unittest discover -s tests   # 77 tests
+python -m unittest discover -s tests   # 80 tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli
 python -m armor_server_ai.service --once   # one pass of the observation service
 ```
