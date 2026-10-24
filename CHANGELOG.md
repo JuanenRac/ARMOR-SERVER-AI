@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.2.7] - A camera that names no nodes counts none
 
 - **A camera that names no nodes counts none:** when the entry of a camera in the server's design has no `nodes`, no radar track and no light sensor of the house is counted for it (before, every online node was). The service says so once in its log, the report to the server carries the reason, and the documents ask for the design to list the nodes that cover each camera. Tests: 80 (before 77).
 - The repository has a security policy, a code of conduct, a contributing guide and a support file.
