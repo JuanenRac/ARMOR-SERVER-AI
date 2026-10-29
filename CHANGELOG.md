@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **The pictures of the README come from shared tools:** `tools/make_architecture.py` draws `images/architecture.svg` from `docs/architecture.json` and `tools/make_structure.py` draws the Repository Structure (the text tree and the animated picture) from `docs/structure.json`; both measure every text, and `--check` fails when a picture, its description or the code it points to disagree. They are vendored from ARMOR-COMMON like the shared CI checks.
+
 ## [0.2.7] - A camera that names no nodes counts none
 
 - **A camera that names no nodes counts none:** when the entry of a camera in the server's design has no `nodes`, no radar track and no light sensor of the house is counted for it (before, every online node was). The service says so once in its log, the report to the server carries the reason, and the documents ask for the design to list the nodes that cover each camera. Tests: 80 (before 77).
