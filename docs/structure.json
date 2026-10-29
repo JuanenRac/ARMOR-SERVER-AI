@@ -1,0 +1,364 @@
+{
+ "repo": "ARMOR-SERVER-AI",
+ "ecosystem": "armor",
+ "svg": "en",
+ "cards": [
+  {
+   "name": "src/armor_server_ai/",
+   "span": 3,
+   "accent": "a",
+   "sub": {
+    "en": "the service, standard library only",
+    "es": "el servicio, solo biblioteca estándar",
+    "de": "der Dienst, nur Standardbibliothek",
+    "fr": "le service, bibliothèque standard seule",
+    "it": "il servizio, solo libreria standard",
+    "ja": "サービス（標準ライブラリのみ）",
+    "zh": "服务，仅用标准库",
+    "pt": "o serviço, só biblioteca padrão"
+   },
+   "rows": [
+    {
+     "name": "service.py",
+     "desc": {
+      "en": "the observation service: one pass per interval",
+      "es": "el servicio de observación: una pasada por intervalo",
+      "de": "der Beobachtungsdienst: ein Durchgang je Intervall",
+      "fr": "le service d'observation : une passe par intervalle",
+      "it": "il servizio di osservazione: un passaggio per intervallo",
+      "ja": "観察サービス：間隔ごとに 1 巡",
+      "zh": "观察服务：每个间隔一轮",
+      "pt": "o serviço de observação: uma passagem por intervalo"
+     }
+    },
+    {
+     "name": "motion.py",
+     "desc": {
+      "en": "grey frame, zones to ignore, movement share",
+      "es": "fotograma gris, zonas a ignorar, movimiento",
+      "de": "Graubild, Ignorierzonen, Bewegungsanteil",
+      "fr": "image grise, zones à ignorer, mouvement",
+      "it": "fotogramma grigio, zone da ignorare, movimento",
+      "ja": "グレーフレーム、無視ゾーン、動き",
+      "zh": "灰度帧、忽略区、运动量",
+      "pt": "imagem cinzenta, zonas a ignorar, movimento"
+     }
+    },
+    {
+     "name": "profile.py",
+     "desc": {
+      "en": "day or low light, with hysteresis",
+      "es": "día o poca luz, con histéresis",
+      "de": "Tag oder wenig Licht, mit Hysterese",
+      "fr": "jour ou faible lumière, avec hystérésis",
+      "it": "giorno o poca luce, con isteresi",
+      "ja": "昼間か低照度（ヒステリシス付き）",
+      "zh": "白天或弱光，带迟滞",
+      "pt": "dia ou pouca luz, com histerese"
+     }
+    },
+    {
+     "name": "policy.py",
+     "desc": {
+      "en": "fusion: ignore, review, high",
+      "es": "fusión: ignore, review, high",
+      "de": "Fusion: ignore, review, high",
+      "fr": "fusion : ignore, review, high",
+      "it": "fusione: ignore, review, high",
+      "ja": "融合：ignore、review、high",
+      "zh": "融合：ignore、review、high",
+      "pt": "fusão: ignore, review, high"
+     }
+    },
+    {
+     "name": "engine_registry.py",
+     "desc": {
+      "en": "TensorRT engines checked by SHA-256",
+      "es": "motores TensorRT comprobados por SHA-256",
+      "de": "TensorRT-Engines per SHA-256 geprüft",
+      "fr": "moteurs TensorRT vérifiés par SHA-256",
+      "it": "motori TensorRT verificati con SHA-256",
+      "ja": "SHA-256 で検証する TensorRT エンジン",
+      "zh": "以 SHA-256 校验的 TensorRT 引擎",
+      "pt": "motores TensorRT verificados por SHA-256"
+     }
+    },
+    {
+     "name": "cli.py",
+     "desc": {
+      "en": "the JSON-lines worker",
+      "es": "el trabajador de líneas JSON",
+      "de": "der JSON-Lines-Arbeiter",
+      "fr": "le travailleur JSON lignes",
+      "it": "il worker di righe JSON",
+      "ja": "JSON Lines ワーカー",
+      "zh": "JSON 行工作进程",
+      "pt": "o trabalhador de linhas JSON"
+     }
+    }
+   ],
+   "complete": true
+  },
+  {
+   "name": {
+    "en": "tests, docs and tools",
+    "es": "pruebas, docs y herramientas",
+    "de": "Tests, Doku und Werkzeuge",
+    "fr": "tests, docs et outils",
+    "it": "test, documenti e strumenti",
+    "ja": "テスト・文書・ツール",
+    "zh": "测试、文档和工具",
+    "pt": "testes, docs e ferramentas"
+   },
+   "kind": "group",
+   "span": 3,
+   "accent": "b",
+   "columns": 2,
+   "sub": {
+    "en": "checked in CI",
+    "es": "comprobado en CI",
+    "de": "in der CI geprüft",
+    "fr": "vérifié en CI",
+    "it": "verificato in CI",
+    "ja": "CI で検証",
+    "zh": "CI 检查",
+    "pt": "verificado na CI"
+   },
+   "rows": [
+    {
+     "name": "tests/",
+     "desc": {
+      "en": "80 tests: motion, policy, service, worker",
+      "es": "80 pruebas: movimiento, política, servicio, trabajador",
+      "de": "80 Tests: Bewegung, Richtlinie, Dienst, Arbeiter",
+      "fr": "80 tests : mouvement, politique, service, travailleur",
+      "it": "80 test: movimento, politica, servizio, worker",
+      "ja": "80 件：動き、ポリシー、サービス、ワーカー",
+      "zh": "80 项：运动、策略、服务、工作进程",
+      "pt": "80 testes: movimento, política, serviço, trabalhador"
+     }
+    },
+    {
+     "name": "docs/",
+     "desc": {
+      "en": "INFERENCE_BOUNDARY.md, SERVICE.md",
+      "es": "INFERENCE_BOUNDARY.md, SERVICE.md",
+      "de": "INFERENCE_BOUNDARY.md, SERVICE.md",
+      "fr": "INFERENCE_BOUNDARY.md, SERVICE.md",
+      "it": "INFERENCE_BOUNDARY.md, SERVICE.md",
+      "ja": "INFERENCE_BOUNDARY.md、SERVICE.md",
+      "zh": "INFERENCE_BOUNDARY.md、SERVICE.md",
+      "pt": "INFERENCE_BOUNDARY.md, SERVICE.md"
+     }
+    },
+    {
+     "name": "tools/",
+     "desc": {
+      "en": "shared CI checks and tools",
+      "es": "comprobaciones de CI y herramientas",
+      "de": "CI-Prüfungen und Werkzeuge",
+      "fr": "vérifications CI et outils",
+      "it": "controlli CI e strumenti",
+      "ja": "CI 検査とツール",
+      "zh": "CI 检查和工具",
+      "pt": "verificações de CI e ferramentas"
+     },
+     "tree_desc": {
+      "en": "the shared CI checks and project tooling",
+      "es": "las comprobaciones de CI y las herramientas compartidas",
+      "de": "die gemeinsamen CI-Prüfungen und Werkzeuge",
+      "fr": "les vérifications CI et les outils partagés",
+      "it": "i controlli CI e gli strumenti condivisi",
+      "ja": "共通の CI 検査とツール",
+      "zh": "共用的 CI 检查和工具",
+      "pt": "as verificações de CI e as ferramentas partilhadas"
+     }
+    },
+    {
+     "name": "images/",
+     "desc": {
+      "en": "banner, icon, README pictures",
+      "es": "banner, icono, imágenes del README",
+      "de": "Banner, Symbol, README-Bilder",
+      "fr": "bannière, icône, images du README",
+      "it": "banner, icona, immagini del README",
+      "ja": "バナー、アイコン、README の画像",
+      "zh": "横幅图、图标、README 图片",
+      "pt": "faixa, ícone, imagens do README"
+     },
+     "tree_desc": {
+      "en": "banner, icon and the pictures of the README",
+      "es": "banner, icono y las imágenes del README",
+      "de": "Banner, Symbol und die Bilder des READMEs",
+      "fr": "bannière, icône et images du README",
+      "it": "banner, icona e immagini del README",
+      "ja": "バナー、アイコン、README の画像",
+      "zh": "横幅图、图标和 README 的图片",
+      "pt": "faixa, ícone e as imagens do README"
+     }
+    },
+    {
+     "name": ".github/",
+     "desc": {
+      "en": "CI, dashboard notice, templates",
+      "es": "CI, aviso al panel, plantillas",
+      "de": "CI, Dashboard-Hinweis, Vorlagen",
+      "fr": "CI, avis au tableau de bord, modèles",
+      "it": "CI, avviso alla dashboard, modelli",
+      "ja": "CI、ダッシュボード通知、テンプレート",
+      "zh": "CI、仪表板通知、模板",
+      "pt": "CI, aviso ao painel, modelos"
+     },
+     "tree_desc": {
+      "en": "CI workflow, dashboard notice, issue and pull-request templates",
+      "es": "flujo de CI, aviso al panel, plantillas de incidencias y pull requests",
+      "de": "CI-Workflow, Dashboard-Hinweis, Vorlagen für Issues und Pull Requests",
+      "fr": "workflow CI, avis au tableau de bord, modèles d'issues et de pull requests",
+      "it": "workflow CI, avviso alla dashboard, modelli per issue e pull request",
+      "ja": "CI ワークフロー、ダッシュボード通知、Issue と Pull Request のテンプレート",
+      "zh": "CI 工作流、仪表板通知、议题和 pull request 模板",
+      "pt": "fluxo de CI, aviso ao painel, modelos de issues e pull requests"
+     }
+    }
+   ]
+  },
+  {
+   "name": {
+    "en": "project files",
+    "es": "ficheros del proyecto",
+    "de": "Projektdateien",
+    "fr": "fichiers du projet",
+    "it": "file del progetto",
+    "ja": "プロジェクトのファイル",
+    "zh": "项目文件",
+    "pt": "ficheiros do projeto"
+   },
+   "kind": "group",
+   "span": 3,
+   "accent": "c",
+   "columns": 2,
+   "sub": {
+    "en": "at the root",
+    "es": "en la raíz",
+    "de": "im Stammordner",
+    "fr": "à la racine",
+    "it": "alla radice",
+    "ja": "ルート",
+    "zh": "根目录",
+    "pt": "na raiz"
+   },
+   "rows": [
+    {
+     "name": "armor.project.json",
+     "desc": {
+      "en": "manifest: version, role, maturity",
+      "es": "manifiesto: versión, función, madurez",
+      "de": "Manifest: Version, Rolle, Reife",
+      "fr": "manifeste : version, rôle, maturité",
+      "it": "manifesto: versione, ruolo, maturità",
+      "ja": "マニフェスト：版・役割・成熟度",
+      "zh": "清单：版本、角色、成熟度",
+      "pt": "manifesto: versão, função, maturidade"
+     }
+    },
+    {
+     "name": "pyproject.toml",
+     "desc": {
+      "en": "package metadata, entry points",
+      "es": "metadatos del paquete, entradas",
+      "de": "Paket-Metadaten, Einstiege",
+      "fr": "métadonnées du paquet, entrées",
+      "it": "metadati del pacchetto, ingressi",
+      "ja": "パッケージ情報とエントリー",
+      "zh": "包元数据、入口",
+      "pt": "metadados do pacote, entradas"
+     }
+    },
+    {
+     "name": "CHANGELOG.md",
+     "desc": {
+      "en": "what changed in each version",
+      "es": "qué cambió en cada versión",
+      "de": "was sich in jeder Version geändert hat",
+      "fr": "ce qui a changé à chaque version",
+      "it": "cosa è cambiato in ogni versione",
+      "ja": "各バージョンの変更点",
+      "zh": "每个版本的变化",
+      "pt": "o que mudou em cada versão"
+     }
+    },
+    {
+     "name": "run.sh  run.bat",
+     "tree_name": "run.sh run.bat",
+     "desc": {
+      "en": "start, shared workflow",
+      "es": "arrancar, flujo compartido",
+      "de": "Start, gemeinsamer Ablauf",
+      "fr": "démarrer, flux partagé",
+      "it": "avvio, flusso condiviso",
+      "ja": "起動（共通フロー）",
+      "zh": "启动（共用流程）",
+      "pt": "arrancar, fluxo partilhado"
+     }
+    },
+    {
+     "name": "build.sh  build.bat",
+     "tree_name": "build.sh build.bat",
+     "desc": {
+      "en": "build and test, shared workflow",
+      "es": "construir y probar, flujo compartido",
+      "de": "Bauen und Testen, gemeinsamer Ablauf",
+      "fr": "construire et tester, flux partagé",
+      "it": "compila e prova, flusso condiviso",
+      "ja": "ビルドとテスト（共通フロー）",
+      "zh": "构建并测试（共用流程）",
+      "pt": "compilar e testar, fluxo partilhado"
+     }
+    },
+    {
+     "name": "build-test.sh  build-test.bat",
+     "tree_name": "build-test.sh build-test.bat",
+     "desc": {
+      "en": "build, test and package",
+      "es": "construir, probar y empaquetar",
+      "de": "Bauen, Testen und Verpacken",
+      "fr": "construire, tester, empaqueter",
+      "it": "compila, prova e impacchetta",
+      "ja": "ビルド、テスト、パッケージ化",
+      "zh": "构建、测试并打包",
+      "pt": "compilar, testar e empacotar"
+     }
+    },
+    {
+     "name": "test.sh  test.bat",
+     "tree_name": "test.sh test.bat",
+     "desc": {
+      "en": "only the tests, never the version",
+      "es": "solo las pruebas, nunca la versión",
+      "de": "nur die Tests, nie die Version",
+      "fr": "seulement les tests, jamais la version",
+      "it": "solo i test, mai la versione",
+      "ja": "テストのみ（版は変えません）",
+      "zh": "只运行测试，不改版本",
+      "pt": "só os testes, nunca a versão"
+     }
+    },
+    {
+     "name": "SECURITY  SUPPORT  CONTRIBUTING  LICENSE",
+     "tree_name": "SECURITY.md SUPPORT.md CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE",
+     "desc": {
+      "en": "community and licence files",
+      "es": "comunidad y licencia",
+      "de": "Community und Lizenz",
+      "fr": "communauté et licence",
+      "it": "comunità e licenza",
+      "ja": "コミュニティとライセンス",
+      "zh": "社区与许可证",
+      "pt": "comunidade e licença"
+     },
+     "tree_desc": ""
+    }
+   ]
+  }
+ ]
+}

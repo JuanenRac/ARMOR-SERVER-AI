@@ -1,0 +1,208 @@
+{
+  "repo": "ARMOR-SERVER-AI",
+  "ecosystem": "armor",
+  "tagline": "It watches the cameras for movement while the house is armed, and only recommends.",
+  "description": "ARMOR-SERVER-AI asks ARMOR-SERVER for the cameras and a tiny grey frame of each, measures the movement outside the zones to ignore, weighs it with the radar tracks and the light, and tells the server what it saw and why. It never acts: every decision carries authorizes_action = false. No detection model exists yet and nothing has run on a Jetson.",
+  "columns": [
+    "WHAT IT ASKS",
+    "THE OBSERVATION SERVICE",
+    "WHAT IT TELLS"
+  ],
+  "nodes": [
+    {
+      "id": "server",
+      "column": 0,
+      "level": "external",
+      "title": "ARMOR-SERVER",
+      "lines": [
+        "GET /api/v1/ai/context and",
+        "the grey frame of each camera;",
+        "token ARMOR_AI_TOKEN"
+      ]
+    },
+    {
+      "id": "radars",
+      "column": 0,
+      "level": "external",
+      "title": "Radars and light",
+      "lines": [
+        "the radar tracks and the lux",
+        "of the nodes that cover",
+        "each camera"
+      ]
+    },
+    {
+      "id": "service",
+      "column": 1,
+      "level": "tested",
+      "title": "service.py",
+      "lines": [
+        "one pass every few seconds,",
+        "only while the system is armed;",
+        "says each new problem once"
+      ],
+      "code": [
+        "src/armor_server_ai/service.py::ARMOR_AI_INTERVAL_S"
+      ]
+    },
+    {
+      "id": "motion",
+      "column": 1,
+      "level": "tested",
+      "title": "motion.py",
+      "lines": [
+        "64 x 36 grey frame, never",
+        "stored; movement outside",
+        "the zones to ignore (16 at most)"
+      ],
+      "code": [
+        "src/armor_server_ai/motion.py"
+      ]
+    },
+    {
+      "id": "profile",
+      "column": 1,
+      "level": "tested",
+      "title": "profile.py",
+      "lines": [
+        "day or low light with",
+        "hysteresis: 30 lux in,",
+        "60 lux out, never twice in 30 s"
+      ],
+      "code": [
+        "src/armor_server_ai/profile.py"
+      ]
+    },
+    {
+      "id": "policy",
+      "column": 1,
+      "level": "contract",
+      "title": "policy.py",
+      "lines": [
+        "fusion into ignore, review",
+        "or high, with the reasons;",
+        "authorizes_action is always false"
+      ],
+      "code": [
+        "src/armor_server_ai/policy.py::authorizes_action"
+      ]
+    },
+    {
+      "id": "registry",
+      "column": 1,
+      "level": "config",
+      "title": "engine_registry.py",
+      "lines": [
+        "TensorRT engines by SHA-256;",
+        "nothing compiled or downloaded;",
+        "no model exists yet"
+      ],
+      "code": [
+        "src/armor_server_ai/engine_registry.py"
+      ],
+      "title_size": 13
+    },
+    {
+      "id": "cli",
+      "column": 1,
+      "level": "tested",
+      "title": "cli.py",
+      "lines": [
+        "JSON lines in, numbered and",
+        "explained results out; a bad",
+        "line never stops the stream"
+      ],
+      "code": [
+        "src/armor_server_ai/cli.py"
+      ]
+    },
+    {
+      "id": "report",
+      "column": 2,
+      "level": "external",
+      "title": "ARMOR-SERVER",
+      "lines": [
+        "POST /api/v1/ai/observations;",
+        "it alarms once until closed",
+        "and notifies the consoles"
+      ]
+    },
+    {
+      "id": "vision",
+      "column": 2,
+      "level": "external",
+      "title": "ARMOR-VISION",
+      "lines": [
+        "the zones, masks and rules",
+        "a future model will use"
+      ]
+    },
+    {
+      "id": "jetson",
+      "column": 2,
+      "level": "untested",
+      "title": "Jetson with TensorRT",
+      "lines": [
+        "the model that tells a person",
+        "from a cat: never run"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "server",
+      "to": "service",
+      "level": "tested",
+      "label": "context, frames"
+    },
+    {
+      "from": "radars",
+      "to": "service",
+      "level": "contract",
+      "label": "tracks, lux"
+    },
+    {
+      "from": "service",
+      "to": "motion",
+      "level": "tested"
+    },
+    {
+      "from": "service",
+      "to": "profile",
+      "level": "tested"
+    },
+    {
+      "from": "motion",
+      "to": "policy",
+      "level": "tested"
+    },
+    {
+      "from": "profile",
+      "to": "policy",
+      "level": "tested"
+    },
+    {
+      "from": "policy",
+      "to": "report",
+      "level": "contract",
+      "label": "observation"
+    },
+    {
+      "from": "cli",
+      "to": "policy",
+      "level": "tested"
+    },
+    {
+      "from": "registry",
+      "to": "jetson",
+      "level": "untested",
+      "label": "engines"
+    },
+    {
+      "from": "vision",
+      "to": "registry",
+      "level": "config"
+    }
+  ],
+  "footer": "Movement and a radar track that agree are high; movement alone is a review."
+}

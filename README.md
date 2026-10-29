@@ -18,7 +18,7 @@
 ### Observation service: movement on the cameras weighed with the radars; it decides and explains, never actuates
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
   <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Tests">
@@ -38,9 +38,15 @@
 |---|---|
 | Version | `0.2.7` |
 | Maturity | Established |
+| Role | Observation service: movement weighed with the radars, recommendations only |
+| Stack | Python 3.11+, standard library only |
 | Tests | 80 (`python -m unittest discover -s tests`) |
-| Stack | Python 3.11+ (standard library) |
+| Contract | Client of ARMOR-SERVER: 3 routes under `/api/v1/ai/`; it is never called |
+| Runs on | The CM5 test bench (as a service, see ARMOR-DEVOPS) or any computer |
 | On real hardware | Running as a service on the CM5 test bench with the real IP cameras (movement only); nothing on a Jetson |
+| License | GPL-3.0-or-later |
+
+**Jump to:** [Overview](#-overview) · [Architecture](#-architecture) · [Security](#-security--safety) · [Interfaces](#-interfaces) · [Configuration](#-configuration) · [Quick start](#-quick-start) · [Testing](#-testing) · [Troubleshooting](#-troubleshooting) · [Structure](#-repository-structure) · [Related](#-related-projects)
 
 ## 🚦 Project status
 
@@ -54,6 +60,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Tests | 🟢 | 80 tests pass (`python -m unittest discover -s tests`). |
 | Hardware | 🟡 | While the system is armed it looks at tiny grey frames of the real IP cameras of the CM5 test bench; nothing has run on a Jetson, with TensorRT or on a decoded RTSP stream. |
 | Integration | 🟡 | It reports movement weighed with the radars to the server of the CM5 test bench. |
+| Security | 🟡 | The service never acts (every decision carries `authorizes_action = false`), refuses a token under 24 characters and a server address that is not `https://` or this same machine, and never stores a picture; tested, with no independent review. |
 | Documentation | 🟢 | Eight languages and the changelog are up to date. |
 
 ## 🎯 Overview
@@ -70,28 +77,150 @@ Each line is one part of this repository and the light says how far it is today.
 
 ARMOR-SERVER-AI is the part that watches the cameras for movement while the house is armed. It never acts: it tells [ARMOR-SERVER](https://github.com/JuanenRac/ARMOR-SERVER) what it saw and why (movement and radar tracks agreeing is `high`), and the server decides what to do. A model that recognises a person, run on a Jetson, is the next step; [ARMOR-VISION](https://github.com/JuanenRac/ARMOR-VISION) holds the zones, masks and rules that model will use.
 
-## 📂 Repository Structure
+| It talks to | How | What for |
+|---|---|---|
+| ARMOR-SERVER | it asks the server (`/api/v1/ai/*`, token `ARMOR_AI_TOKEN`) | the cameras, their grey frames and the zones to ignore in; the observation out |
+| ARMOR-NODE-RADAR | through the server | the radar tracks and the light of the nodes that cover each camera |
+| ARMOR-VISION | rules and masks (next step) | the zones, masks and rules the detection model will use |
+| ARMOR-DEVOPS | installs it as a service | deployment on the CM5 test bench |
 
-```text
-ARMOR-SERVER-AI/
-├── src/armor_server_ai/   profile (day/night), policy (fusion), motion (movement and ignore zones), engine_registry, service (the observation service), cli
-├── tests/                 80 tests
-├── tools/                 the shared CI checks (armor_ci_validate.py, armor_project_tool.py, _armor_readme_parity.py)
-└── docs/                  INFERENCE_BOUNDARY.md, SERVICE.md
-```
+## 🏛️ Architecture
 
-## 🛠️ Development Environment
+<p align="center">
+  <img src="images/architecture.svg" alt="ARMOR-SERVER-AI architecture: what it asks the server, the observation service with its modules, and what it tells" width="100%">
+</p>
 
-**Requirements:** Python 3.11+, optional: a Jetson Orin NX with TensorRT engines (not proven)
+## 🔒 Security & Safety
+
+| Threat | Defence |
+|---|---|
+| The service acts on its own | Never: every decision carries `authorizes_action = false`; the central server authenticates and authorises every action |
+| The token crosses a network in clear | `ARMOR_AI_SERVER_URL` must be `https://`, or `http://` to this same machine (`127.0.0.1`, `localhost`); otherwise the service refuses to start |
+| A weak token | `ARMOR_AI_TOKEN` of at least 24 characters (the server asks the same) |
+| Huge answers from the server | The context is read up to 1 000 000 bytes and an answer to an observation up to 65 536; a frame is exactly 64 x 36 = 2304 bytes |
+| Pictures kept | The tiny grey frame is never stored |
+| A tampered TensorRT engine | Only pre-built engines (`daylight`, `low_light`) that exist, are not empty and, with an `engines.json`, match their SHA-256; nothing is compiled or downloaded |
+| A false alarm from a change of light | A change of more than 60 % of the picture is light, not movement; less than 1 % is not movement; pixel threshold 18; at least 64 pixels counted; at most 16 zones to ignore and a picture that is almost all ignored is not judged |
+| Day and night flicker; stale data; a hostile JSON line | Hysteresis (low light under 30 lux, daylight again over 60 lux, never twice within 30 s, lux up to 200 000); an observation older than 10 s never raises an alert; a JSON line over 4096 bytes is refused and the stream goes on |
+
+## 🔌 Interfaces
+
+| Route | Auth | What it does |
+|---|---|---|
+| `GET /api/v1/ai/context` | token `ARMOR_AI_TOKEN` | the houses: nodes and cameras, and the zones to ignore of each camera |
+| `GET /api/v1/ai/cameras/<id>/frame` | same | the 64 x 36 grey frame of a camera (2304 bytes) |
+| `POST /api/v1/ai/observations` | same | the report: what it saw, the severity and the reasons |
+| `python -m armor_server_ai.service [--once]` | - | the observation service; `--once` makes one pass and ends |
+| `python -m armor_server_ai.cli [--radar-tracks N]` | - | JSON lines on standard input (`{"label", "confidence", "lux", "radar_tracks"}`), one numbered and explained decision per line |
+
+A decision is `{severity: ignore | review | high, reasons, authorizes_action: false}`. Labels: `person`, `vehicle`, `animal`, `unknown`, `motion`. **Fusion:** `high` is a person with confidence of 0.80 or more and at least one radar track, or strong movement and a radar track that agree; `review` is a confident detection (0.55 in daylight, 0.45 in low light) or a radar track with nothing seen; simple movement counts a radar track only with 30 % of certainty (about 3 % of the picture).
+
+## ⚙️ Configuration
+
+| Setting | Default | What it does |
+|---|---|---|
+| `ARMOR_AI_TOKEN` | yes (24+ characters) | the token the server gave the service |
+| `ARMOR_AI_SERVER_URL` | http://127.0.0.1:18080 | the server; `https://` or this same machine |
+| `ARMOR_AI_INTERVAL_S` | 3 (1-60) | seconds between passes; with many cameras the pass is spaced out to stay under 200 frames a minute |
+| `ARMOR_AI_CONFIRM_FRAMES` | 2 (1-20) | frames in a row that must show movement before it is told |
+| `ARMOR_AI_COOLDOWN_S` | 60 (0-3600) | seconds before the same camera is told again |
+
+A value out of range stops the service with `<NAME> must be between a and b`. The thresholds of the decision (0.80, 0.55, 0.45, the radar bar of 30 %) and of the movement (18, 1 %, 60 %) are constants of the code described in [docs/INFERENCE_BOUNDARY.md](docs/INFERENCE_BOUNDARY.md); the settings of the service are in [docs/SERVICE.md](docs/SERVICE.md).
+
+## 🚀 Quick start
+
+**Requirements:** Python 3.11+ (standard library only). Optional: a Jetson Orin NX with TensorRT engines (not proven).
 
 ```powershell
-$env:PYTHONPATH="src"
-python -m unittest discover -s tests   # 80 tests
-echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli
-python -m armor_server_ai.service --once   # one pass of the observation service
+$env:PYTHONPATH = "src"
+python -m unittest discover -s tests                                                                 # 80 tests
+echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli  # one decision from a line
+python -m armor_server_ai.service --once                                                             # one pass of the observation service
 ```
 
 See the [inference boundary](docs/INFERENCE_BOUNDARY.md) and the [service](docs/SERVICE.md).
+
+## 🧪 Testing
+
+```powershell
+python -m unittest discover -s tests  # 80 tests
+python -I tools/armor_ci_validate.py
+```
+
+| Test file | Tests | What it covers |
+|---|---|---|
+| `test_service.py` | 16 | movement, the watcher, cooldown and which radars count |
+| `test_service_http.py` | 21 | the link to the server, the address rules, the passes and the settings |
+| `test_vision_profile.py` | 20 | day and night with hysteresis, the fusion policy and the worker |
+| `test_cli_worker.py` | 10 | the JSON-lines worker and its bad lines |
+| `test_ignore_zones.py`, `test_registry.py` | 13 | zones to ignore, and the checked TensorRT engines |
+
+GitHub Actions runs the A.R.M.O.R. baseline on every push and pull request: the validation of the manifest, version, changelog and README parity, then the project's own build and tests.
+
+## 🏗️ Build & Release
+
+It is plain Python: nothing to compile. The version lives in `pyproject.toml`, in `armor.project.json` and in the README badge (read from the manifest); each version has its entry in [CHANGELOG.md](CHANGELOG.md). Releases are published on GitHub.
+
+## 🩺 Troubleshooting
+
+| You see | Because | Do |
+|---|---|---|
+| `armor-ai: watching, every N s` | the service started | nothing to do |
+| `ARMOR_AI_TOKEN (at least 24 characters) is needed` | the token is missing or short | set a token of 24+ characters, the same one the server has |
+| `ARMOR_AI_SERVER_URL must be https://...` | the address would send the token in clear over a network | use `https://`, or `http://127.0.0.1` on the same machine |
+| `armor-ai: the observation of <camera> could not be told (<code>)` | the report did not reach the server (`unreachable`, `unauthorized`...) | fix the cause; the next movement is told without waiting for the cooldown; `armor-ai: the server answers again` says when it is over |
+| `radar and light sensors not counted: the site design lists no nodes for this camera` | the camera names no nodes in the site design | in the Site Designer of Studio, list the radar nodes that cover the camera |
+
+## 📂 Repository Structure
+
+<p align="center">
+  <img src="images/repository-structure.svg" alt="Repository structure of ARMOR-SERVER-AI" width="100%">
+</p>
+
+<details>
+<summary>Text version of the tree</summary>
+
+```text
+ARMOR-SERVER-AI/
+├── src/armor_server_ai/
+│   ├── service.py                 the observation service: one pass per interval
+│   ├── motion.py                  grey frame, zones to ignore, movement share
+│   ├── profile.py                 day or low light, with hysteresis
+│   ├── policy.py                  fusion: ignore, review, high
+│   ├── engine_registry.py         TensorRT engines checked by SHA-256
+│   └── cli.py                     the JSON-lines worker
+├── tests/                         80 tests: motion, policy, service, worker
+├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md
+├── tools/                         the shared CI checks and project tooling
+├── images/                        banner, icon and the pictures of the README
+├── .github/                       CI workflow, dashboard notice, issue and pull-request templates
+├── armor.project.json             manifest: version, role, maturity
+├── pyproject.toml                 package metadata, entry points
+├── CHANGELOG.md                   what changed in each version
+├── run.sh run.bat                 start, shared workflow
+├── build.sh build.bat             build and test, shared workflow
+├── build-test.sh build-test.bat   build, test and package
+├── test.sh test.bat               only the tests, never the version
+└── SECURITY.md SUPPORT.md CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE
+```
+
+</details>
+
+## 🗺️ Roadmap & Known limits
+
+**Known limits today**
+
+* There is no detection model: it cannot tell a person from a cat or a branch.
+* Nothing has run on a Jetson, with TensorRT or on a decoded RTSP stream there.
+* No independent security review.
+
+**Next**
+
+* A model that recognises a person, run on a Jetson Orin NX, using the zones, masks and rules of ARMOR-VISION.
+
+## 🌍 Languages
+
+README and texts exist in English, Spanish, French, Italian, German, Chinese, Japanese and European Portuguese.
 
 ## 🔗 Related Projects
 
@@ -117,15 +246,21 @@ See the [inference boundary](docs/INFERENCE_BOUNDARY.md) and the [service](docs/
 * **[ARMOR-UPDATER](https://github.com/JuanenRac/ARMOR-UPDATER)** - Detects, installs and updates the ecosystem's own repositories
 * **[ARMOR-DOCS](https://github.com/JuanenRac/ARMOR-DOCS)** - Architecture, security baseline and the capability matrix
 
-## 📚 Documentation & Community
+## 📚 Documentation
 
-Where to read more:
-
+* [Inference boundary](docs/INFERENCE_BOUNDARY.md): what is decided here and what is left to a model
+* [The service](docs/SERVICE.md): the observation service and its settings
 * [Capability matrix: what is proven and what is not](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/CAPABILITY_MATRIX.md)
 * [Project catalogue: versions and how the repositories depend on each other](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/PROJECT_CATALOG.md)
 * [Changelog of this repository](CHANGELOG.md)
-* [License (GPL-3.0-or-later)](LICENSE)
-* Questions, ideas and reports: electrohobby3d@gmail.com
+
+## 🤝 Contributing & Community
+
+* Before a pull request run `python -I tools/armor_ci_validate.py` and the tests: both must pass. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md).
+* The README exists in eight languages and is generated from the sources in ARMOR-DOCS: a change to the text is made there.
+* A change to a message between components starts in ARMOR-COMMON.
+* Do not describe as working on a board what has only been built.
+* Report a vulnerability privately: [SECURITY.md](SECURITY.md). Questions, ideas and reports: electrohobby3d@gmail.com ([SUPPORT.md](SUPPORT.md)).
 
 ## 👤 AUTHOR
 
