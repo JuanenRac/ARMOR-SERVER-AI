@@ -6,7 +6,7 @@ All notable changes to this project are documented here.
 
 - **The lights of Project status follow the evidence of the manifest:** the manifest says how far the repository has been shown to work (`evidence`: `host-test`, `simulator`, `bench` or `field`) and the validator fails when a light is above what that evidence and the maturity allow (`tools/status_lights.py`), so a green that never ran on real hardware cannot come back.
 - **The README follows the universal layout in the eight languages:** a threat and defence table with the real limits, the three routes it asks of the server, its settings with their ranges, the tests by file, troubleshooting taken from the service messages, the Architecture picture drawn from `docs/architecture.json` and the Repository Structure drawn from `docs/structure.json`.
-- **The layout of the README is checked in the CI:** the validator runs the shared `tools/universal_readme_check.py` and lists, as a warning, what differs from the universal layout of the README.
+- **The layout of the README is checked in the CI:** the validator runs the shared `tools/universal_readme_check.py` and fails when the README differs from the universal layout.
 - **The pictures of the README come from shared tools:** `tools/make_architecture.py` draws `images/architecture.svg` from `docs/architecture.json` and `tools/make_structure.py` draws the Repository Structure (the text tree and the animated picture) from `docs/structure.json`; both measure every text, and `--check` fails when a picture, its description or the code it points to disagree. They are vendored from ARMOR-COMMON like the shared CI checks.
 
 ## [0.2.7] - A camera that names no nodes counts none
