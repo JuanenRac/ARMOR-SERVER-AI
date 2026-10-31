@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-130%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.8-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**诚实性检查 - 今天真正能运行的部分：** 决策层和移动检测器是真实的并经过测试（80 个测试），观察服务**在 CM5 测试台上运行**：系统布防时，它查看真实 IP 摄像头的微小灰度帧，并报告与雷达对照权衡后的移动。它分不清人、猫或树枝：**目前还没有检测模型**，也没有任何东西在 Jetson、TensorRT 或在那里解码的 RTSP 流上运行过。
+**诚实性检查 - 今天真正能运行的部分：** 决策层和移动检测器是真实的并经过测试（130 个测试），观察服务**在 CM5 测试台上运行**：系统布防时，它查看真实 IP 摄像头的微小灰度帧，并报告与雷达对照权衡后的移动。它分不清人、猫或树枝：**目前还没有检测模型**，也没有任何东西在 Jetson、TensorRT 或在那里解码的 RTSP 流上运行过。
 
 ---
 
@@ -40,7 +40,7 @@
 | 成熟度 | 成熟 |
 | 角色 | 观察服务：结合雷达评估运动，只给出建议 |
 | 技术栈 | Python 3.11+，仅用标准库 |
-| 测试 | 80 项（`python -m unittest discover -s tests`） |
+| 测试 | 130 项（`python -m unittest discover -s tests`） |
 | 契约 | ARMOR-SERVER 的客户端：`/api/v1/ai/` 下的 3 条路由；从不被调用 |
 | 运行位置 | CM5 测试台（作为服务，见 ARMOR-DEVOPS）或任何计算机 |
 | 真实硬件 | 在 CM5 测试台上用真实 IP 摄像头作为服务运行（仅移动）；Jetson 上没有任何东西 |
@@ -57,7 +57,7 @@
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟡 | 移动检测器和决策层在 CM5 测试台上作为服务运行，但目前还没有检测模型：它分不清人、猫或树枝。 |
-| 测试 | 🟢 | 80 项测试通过（`python -m unittest discover -s tests`）。 |
+| 测试 | 🟢 | 130 项测试通过（`python -m unittest discover -s tests`）。 |
 | 硬件 | 🟡 | 系统布防期间，它查看 CM5 测试台上真实 IP 摄像头的微小灰度画面；还没有在 Jetson、TensorRT 或解码后的 RTSP 流上运行过。 |
 | 集成 | 🟡 | 它把结合雷达加权后的移动情况报告给测试台的服务器。 |
 | 安全 | 🟡 | 该服务从不执行动作（每个判定都带 `authorizes_action = false`），拒绝少于 24 个字符的令牌以及既不是 `https://` 也不是本机的服务器地址，从不保存图片；已测试，没有独立审查。 |
@@ -72,6 +72,7 @@
 * **只是建议：**决定总是带有 `authorizes_action = false`。中央服务器对每个动作进行认证和授权。
 * **经校验和验证的引擎：**预先构建的 TensorRT 引擎只有在存在、非空，并且（有 `engines.json` 时）SHA-256 匹配时才会被接受。不会编译或下载任何东西。
 * **会说明出了什么问题的服务：**每个新问题变化时都会报告（`unreachable`、`unauthorized`……），结束时会说明*服务器又有应答了*；JSONL 工作进程保留编号并带解释的结果，坏的一行绝不会中断数据流。
+* **事件的每日摘要（可选，默认关闭）：** `--daily-summary 文件 --summary-config 设置` 把一天的事件（报警、连接中断、读数、用电）整理成按类型、区域和小时的计数、严重报警、失去连接的节点、偏离的读数和用电峰值，用八种语言的模板生成文本，并给出五种可解释的规律（每小时同一时刻重复的同一报警、时好时坏的传感器、反复失去连接的节点、反复出现的误报、远高于移动平均的用电），每种都附依据，所有阈值都在设置文件中。AI 提供方的可选备注同样默认关闭：只附带模拟提供方，没有明确的开关就不会发送任何数据，并且会先去除姓名、地址和凭据。
 
 ## 🧩 在 A.R.M.O.R. 中的角色
 
@@ -133,9 +134,10 @@ ARMOR-SERVER-AI 是在住宅布防时观察摄像头移动的部分。它从不�
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                 # 80 项
-echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli  # 从一行得到一个判定
-python -m armor_server_ai.service --once                                                             # 观察服务运行一轮
+python -m unittest discover -s tests                                                                      # 130 项
+echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # 从一行得到一个判定
+python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # 设置里启用之前会拒绝，之后给出一天的摘要
+python -m armor_server_ai.service --once                                                                  # 观察服务运行一轮
 ```
 
 请参阅[推理边界](docs/INFERENCE_BOUNDARY.md)和[服务](docs/SERVICE.md)。
@@ -143,7 +145,7 @@ python -m armor_server_ai.service --once                                        
 ## 🧪 测试
 
 ```powershell
-python -m unittest discover -s tests  # 80 项
+python -m unittest discover -s tests  # 130 项
 python -I tools/armor_ci_validate.py
 ```
 
@@ -153,6 +155,8 @@ python -I tools/armor_ci_validate.py
 | `test_service_http.py` | 21 | 与服务器的连接、地址规则、轮次与设置 |
 | `test_vision_profile.py` | 20 | 带迟滞的昼夜、融合策略与工作进程 |
 | `test_cli_worker.py` | 10 | JSON 行工作进程及其坏行 |
+| `test_characterization_cli.py` | 9 | 每日摘要之前的工作进程和服务行为 |
+| `test_daily_summary.py` | 41 | 每日摘要：严格输入、计数相加一致、确定性、带依据的规律、八种语言、脱敏和 AI 开关 |
 | `test_ignore_zones.py`, `test_registry.py` | 13 | 忽略区与经校验的 TensorRT 引擎 |
 
 GitHub Actions 在每次推送和拉取请求时运行 A.R.M.O.R. 基线：清单、版本、更新日志和 README 一致性的校验，然后是项目自身的构建和测试。 源代码通过类型检查：`python -m mypy src` 没有任何报告。
@@ -188,9 +192,16 @@ ARMOR-SERVER-AI/
 │   ├── profile.py                 白天或弱光，带迟滞
 │   ├── policy.py                  融合：ignore、review、high
 │   ├── engine_registry.py         以 SHA-256 校验的 TensorRT 引擎
-│   └── cli.py                     JSON 行工作进程
-├── tests/                         80 项：运动、策略、服务、工作进程
-├── docs/                          INFERENCE_BOUNDARY.md、SERVICE.md
+│   ├── cli.py                     JSON 行工作进程
+│   ├── daily.py                   每日摘要的命令和报告
+│   ├── daily_events.py            严格读取一天的事件
+│   ├── daily_summary.py           计数、严重报警和可解释的规律
+│   ├── daily_text.py              八种语言的文本（模板）
+│   ├── daily_ai.py                提供方的可选备注（默认关闭）
+│   ├── daily_config.py            设置文件（严格）
+│   └── redact.py                  去除姓名、地址和凭据
+├── tests/                         130 项：运动、策略、服务、工作进程、每日摘要
+├── docs/                          INFERENCE_BOUNDARY.md、SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         共用的 CI 检查和工具
 ├── images/                        横幅图、图标和 README 的图片
 ├── .github/                       CI 工作流、仪表板通知、议题和 pull request 模板
@@ -249,6 +260,7 @@ README 和文本提供英语、西班牙语、法语、意大利语、德语、�
 ## 📚 文档
 
 * [推理边界](docs/INFERENCE_BOUNDARY.md)：这里决定什么，留给模型什么
+* [每日摘要](docs/DAILY_SUMMARY.md)：一天的事件、规律和可选的 AI 备注（默认关闭）
 * [服务](docs/SERVICE.md)：观察服务及其设置
 * [能力矩阵：哪些已被证明，哪些没有](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/CAPABILITY_MATRIX.md)
 * [项目目录：版本以及各仓库之间如何相互依赖](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/PROJECT_CATALOG.md)

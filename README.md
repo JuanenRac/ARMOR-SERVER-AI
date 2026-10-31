@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-130%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.8-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**Honesty check - what runs today:** The decision layer and the movement detector are real and tested (80 tests), and the observation service **runs on the CM5 test bench**: while the system is armed it looks at tiny grey frames of the real IP cameras and reports movement weighed with the radars. It cannot tell a person from a cat or a branch: **there is no detection model yet**, and nothing has run on the Jetson, TensorRT or an RTSP stream decoded there.
+**Honesty check - what runs today:** The decision layer and the movement detector are real and tested (130 tests), and the observation service **runs on the CM5 test bench**: while the system is armed it looks at tiny grey frames of the real IP cameras and reports movement weighed with the radars. It cannot tell a person from a cat or a branch: **there is no detection model yet**, and nothing has run on the Jetson, TensorRT or an RTSP stream decoded there.
 
 ---
 
@@ -40,7 +40,7 @@
 | Maturity | Established |
 | Role | Observation service: movement weighed with the radars, recommendations only |
 | Stack | Python 3.11+, standard library only |
-| Tests | 80 (`python -m unittest discover -s tests`) |
+| Tests | 130 (`python -m unittest discover -s tests`) |
 | Contract | Client of ARMOR-SERVER: 3 routes under `/api/v1/ai/`; it is never called |
 | Runs on | The CM5 test bench (as a service, see ARMOR-DEVOPS) or any computer |
 | On real hardware | Running as a service on the CM5 test bench with the real IP cameras (movement only); nothing on a Jetson |
@@ -57,7 +57,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟡 | The movement detector and the decision layer run as a service on the CM5 test bench, but there is no detection model yet: it cannot tell a person from a cat or a branch. |
-| Tests | 🟢 | 80 tests pass (`python -m unittest discover -s tests`). |
+| Tests | 🟢 | 130 tests pass (`python -m unittest discover -s tests`). |
 | Hardware | 🟡 | While the system is armed it looks at tiny grey frames of the real IP cameras of the CM5 test bench; nothing has run on a Jetson, with TensorRT or on a decoded RTSP stream. |
 | Integration | 🟡 | It reports movement weighed with the radars to the server of the CM5 test bench. |
 | Security | 🟡 | The service never acts (every decision carries `authorizes_action = false`), refuses a token under 24 characters and a server address that is not `https://` or this same machine, and never stores a picture; tested, with no independent review. |
@@ -72,6 +72,7 @@ Each line is one part of this repository and the light says how far it is today.
 * **Recommendations only:** a decision always carries `authorizes_action = false`. The central server authenticates and authorises every action.
 * **Checksum-verified engines:** pre-built TensorRT engines are accepted only if present, non-empty and, with an `engines.json`, matching their SHA-256. Nothing is compiled or downloaded.
 * **A service that says what is wrong:** it reports every new problem when it changes (`unreachable`, `unauthorized`…) and *the server answers again* when it is over; a JSONL worker keeps numbered, explained results and a bad line never stops the stream.
+* **A daily summary of the events (optional, off by default):** `--daily-summary FILE --summary-config CONFIG` turns the events of a day (alarms, link losses, readings, power) into counts by type, zone and hour, the serious alarms, the nodes that lost their link, the outlying readings and the consumption peaks, a text from templates in the eight languages, and five explainable patterns (the same alarm at the same time of the hour, a sensor that fails on and off, a node that keeps losing its link, recurring false alarms, consumption far above its moving average), each with its evidence and every threshold in the settings file. An optional note from an AI provider is also off by default: only a simulated provider ships, nothing is sent away without an explicit switch, and names, addresses and credentials are redacted first.
 
 ## 🧩 Role in A.R.M.O.R.
 
@@ -133,9 +134,10 @@ A value out of range stops the service with `<NAME> must be between a and b`. Th
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                 # 80 tests
-echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli  # one decision from a line
-python -m armor_server_ai.service --once                                                             # one pass of the observation service
+python -m unittest discover -s tests                                                                      # 130 tests
+echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # one decision from a line
+python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # refuses until the settings say enabled; then the summary of a day
+python -m armor_server_ai.service --once                                                                  # one pass of the observation service
 ```
 
 See the [inference boundary](docs/INFERENCE_BOUNDARY.md) and the [service](docs/SERVICE.md).
@@ -143,7 +145,7 @@ See the [inference boundary](docs/INFERENCE_BOUNDARY.md) and the [service](docs/
 ## 🧪 Testing
 
 ```powershell
-python -m unittest discover -s tests  # 80 tests
+python -m unittest discover -s tests  # 130 tests
 python -I tools/armor_ci_validate.py
 ```
 
@@ -153,6 +155,8 @@ python -I tools/armor_ci_validate.py
 | `test_service_http.py` | 21 | the link to the server, the address rules, the passes and the settings |
 | `test_vision_profile.py` | 20 | day and night with hysteresis, the fusion policy and the worker |
 | `test_cli_worker.py` | 10 | the JSON-lines worker and its bad lines |
+| `test_characterization_cli.py` | 9 | the worker and the service as they were before the daily summary |
+| `test_daily_summary.py` | 41 | the daily summary: strict input, counts that add up, determinism, patterns with evidence, the eight languages, redaction and the AI switch |
 | `test_ignore_zones.py`, `test_registry.py` | 13 | zones to ignore, and the checked TensorRT engines |
 
 GitHub Actions runs the A.R.M.O.R. baseline on every push and pull request: the validation of the manifest, version, changelog and README parity, then the project's own build and tests. The sources pass the type checker: `python -m mypy src` reports nothing.
@@ -188,9 +192,16 @@ ARMOR-SERVER-AI/
 │   ├── profile.py                 day or low light, with hysteresis
 │   ├── policy.py                  fusion: ignore, review, high
 │   ├── engine_registry.py         TensorRT engines checked by SHA-256
-│   └── cli.py                     the JSON-lines worker
-├── tests/                         80 tests: motion, policy, service, worker
-├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md
+│   ├── cli.py                     the JSON-lines worker
+│   ├── daily.py                   the daily summary command and report
+│   ├── daily_events.py            strict reading of the events of a day
+│   ├── daily_summary.py           counts, serious alarms and explainable patterns
+│   ├── daily_text.py              the text in eight languages, from templates
+│   ├── daily_ai.py                the optional note of a provider, off by default
+│   ├── daily_config.py            the settings file, strict
+│   └── redact.py                  names, addresses and credentials removed
+├── tests/                         130 tests: motion, policy, service, worker, daily summary
+├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         the shared CI checks and project tooling
 ├── images/                        banner, icon and the pictures of the README
 ├── .github/                       CI workflow, dashboard notice, issue and pull-request templates
@@ -249,6 +260,7 @@ README and texts exist in English, Spanish, French, Italian, German, Chinese, Ja
 ## 📚 Documentation
 
 * [Inference boundary](docs/INFERENCE_BOUNDARY.md): what is decided here and what is left to a model
+* [The daily summary](docs/DAILY_SUMMARY.md): the events of a day, the patterns and the optional AI note, off by default
 * [The service](docs/SERVICE.md): the observation service and its settings
 * [Capability matrix: what is proven and what is not](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/CAPABILITY_MATRIX.md)
 * [Project catalogue: versions and how the repositories depend on each other](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/PROJECT_CATALOG.md)

@@ -16,6 +16,7 @@ import argparse
 import json
 import sys
 from collections.abc import Iterable
+from pathlib import Path
 from typing import TextIO
 
 from .policy import VisualObservation, decide
@@ -61,10 +62,28 @@ def run(stdin: TextIO, stdout: TextIO, radar_tracks: int) -> None:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Classify validated visual observations from JSONL")
     parser.add_argument("--radar-tracks", type=int, default=0, help="active radar tracks for the node when a line does not say")
+    parser.add_argument("--daily-summary", type=Path, metavar="FILE", help="instead of the worker, summarise the events of a day in FILE (JSON lines or a list); off unless --summary-config says enabled")
+    parser.add_argument("--summary-config", type=Path, metavar="FILE", help="the settings of --daily-summary (see docs/DAILY_SUMMARY.md); without them the summary stays off")
+    parser.add_argument("--lang", metavar="CODE", help="language of the text of --daily-summary: en, es, de, fr, it, ja, zh or pt (default: the settings)")
+    parser.add_argument("--json", action="store_true", help="--daily-summary prints the structured report as JSON instead of the text")
     args = parser.parse_args(argv)
     if args.radar_tracks < 0:
         parser.error("--radar-tracks must be non-negative")
-    run(sys.stdin, sys.stdout, args.radar_tracks)
+    if args.daily_summary is None:
+        if args.summary_config or args.lang or args.json:
+            parser.error("--summary-config, --lang and --json need --daily-summary")
+        run(sys.stdin, sys.stdout, args.radar_tracks)
+        return
+    from .daily import run as run_daily   # only loaded when asked for: the worker above does not change
+    code, out, err = run_daily(args.daily_summary, args.summary_config, args.lang, args.json)
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            reconfigure(encoding="utf-8")   # the text may be Japanese or Chinese whatever the console says
+    sys.stdout.write(out)
+    sys.stderr.write(err)
+    if code:
+        raise SystemExit(code)
 
 
 if __name__ == "__main__":

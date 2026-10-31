@@ -95,6 +95,97 @@
       "zh": "JSON 行工作进程",
       "pt": "o trabalhador de linhas JSON"
      }
+    },
+    {
+     "name": "daily.py",
+     "desc": {
+      "en": "the daily summary command and report",
+      "es": "el comando y el informe del resumen diario",
+      "de": "der Befehl und Bericht der Tagesübersicht",
+      "fr": "la commande et le rapport du résumé quotidien",
+      "it": "il comando e il rapporto del riepilogo giornaliero",
+      "ja": "日次サマリーのコマンドとレポート",
+      "zh": "每日摘要的命令和报告",
+      "pt": "o comando e o relatório do resumo diário"
+     }
+    },
+    {
+     "name": "daily_events.py",
+     "desc": {
+      "en": "strict reading of the events of a day",
+      "es": "lectura estricta de los eventos de un día",
+      "de": "strenges Einlesen der Ereignisse eines Tages",
+      "fr": "lecture stricte des événements d'un jour",
+      "it": "lettura rigorosa degli eventi di un giorno",
+      "ja": "1 日のイベントの厳密な読み込み",
+      "zh": "严格读取一天的事件",
+      "pt": "leitura estrita dos eventos de um dia"
+     }
+    },
+    {
+     "name": "daily_summary.py",
+     "desc": {
+      "en": "counts, serious alarms and explainable patterns",
+      "es": "recuentos, alarmas graves y patrones explicables",
+      "de": "Zählungen, schwere Alarme und erklärbare Muster",
+      "fr": "comptages, alarmes graves et motifs explicables",
+      "it": "conteggi, allarmi gravi e schemi spiegabili",
+      "ja": "集計、重大アラーム、説明可能なパターン",
+      "zh": "计数、严重报警和可解释的规律",
+      "pt": "contagens, alarmes graves e padrões explicáveis"
+     }
+    },
+    {
+     "name": "daily_text.py",
+     "desc": {
+      "en": "the text in eight languages, from templates",
+      "es": "el texto en ocho idiomas, con plantillas",
+      "de": "der Text in acht Sprachen aus Vorlagen",
+      "fr": "le texte en huit langues, par modèles",
+      "it": "il testo in otto lingue, da modelli",
+      "ja": "8 言語のテキスト（テンプレート）",
+      "zh": "八种语言的文本（模板）",
+      "pt": "o texto em oito idiomas, por modelos"
+     }
+    },
+    {
+     "name": "daily_ai.py",
+     "desc": {
+      "en": "the optional note of a provider, off by default",
+      "es": "la nota opcional de un proveedor, apagada",
+      "de": "die optionale Notiz eines Anbieters, standardmäßig aus",
+      "fr": "la note facultative d'un fournisseur, désactivée",
+      "it": "la nota facoltativa di un fornitore, spenta",
+      "ja": "プロバイダーの任意メモ（既定でオフ）",
+      "zh": "提供方的可选备注（默认关闭）",
+      "pt": "a nota opcional de um fornecedor, desligada"
+     }
+    },
+    {
+     "name": "daily_config.py",
+     "desc": {
+      "en": "the settings file, strict",
+      "es": "el fichero de ajustes, estricto",
+      "de": "die Einstellungsdatei, streng geprüft",
+      "fr": "le fichier de réglages, strict",
+      "it": "il file di impostazioni, rigoroso",
+      "ja": "設定ファイル（厳密）",
+      "zh": "设置文件（严格）",
+      "pt": "o ficheiro de definições, estrito"
+     }
+    },
+    {
+     "name": "redact.py",
+     "desc": {
+      "en": "names, addresses and credentials removed",
+      "es": "nombres, direcciones y credenciales eliminados",
+      "de": "Namen, Adressen und Zugangsdaten entfernt",
+      "fr": "noms, adresses et identifiants retirés",
+      "it": "nomi, indirizzi e credenziali rimossi",
+      "ja": "名前・アドレス・認証情報の除去",
+      "zh": "去除姓名、地址和凭据",
+      "pt": "nomes, endereços e credenciais removidos"
+     }
     }
    ],
    "complete": true
@@ -128,27 +219,37 @@
     {
      "name": "tests/",
      "desc": {
-      "en": "80 tests: motion, policy, service, worker",
-      "es": "80 pruebas: movimiento, política, servicio, trabajador",
-      "de": "80 Tests: Bewegung, Richtlinie, Dienst, Arbeiter",
-      "fr": "80 tests : mouvement, politique, service, travailleur",
-      "it": "80 test: movimento, politica, servizio, worker",
-      "ja": "80 件：動き、ポリシー、サービス、ワーカー",
-      "zh": "80 项：运动、策略、服务、工作进程",
-      "pt": "80 testes: movimento, política, serviço, trabalhador"
+      "en": "130 tests: motion, policy, service, worker, daily summary",
+      "es": "130 pruebas: movimiento, política, servicio, trabajador, resumen diario",
+      "de": "130 Tests: Bewegung, Richtlinie, Dienst, Arbeiter, Tagesübersicht",
+      "fr": "130 tests : mouvement, politique, service, travailleur, résumé quotidien",
+      "it": "130 test: movimento, politica, servizio, worker, riepilogo giornaliero",
+      "ja": "130 件：動き、ポリシー、サービス、ワーカー、日次サマリー",
+      "zh": "130 项：运动、策略、服务、工作进程、每日摘要",
+      "pt": "130 testes: movimento, política, serviço, trabalhador, resumo diário"
      }
     },
     {
      "name": "docs/",
      "desc": {
-      "en": "INFERENCE_BOUNDARY.md, SERVICE.md",
-      "es": "INFERENCE_BOUNDARY.md, SERVICE.md",
-      "de": "INFERENCE_BOUNDARY.md, SERVICE.md",
-      "fr": "INFERENCE_BOUNDARY.md, SERVICE.md",
-      "it": "INFERENCE_BOUNDARY.md, SERVICE.md",
-      "ja": "INFERENCE_BOUNDARY.md、SERVICE.md",
-      "zh": "INFERENCE_BOUNDARY.md、SERVICE.md",
-      "pt": "INFERENCE_BOUNDARY.md, SERVICE.md"
+      "en": "inference, service, daily summary",
+      "es": "inferencia, servicio, resumen diario",
+      "de": "Inferenz, Dienst, Tagesübersicht",
+      "fr": "inférence, service, résumé",
+      "it": "inferenza, servizio, riepilogo",
+      "ja": "推論・サービス・日次サマリー",
+      "zh": "推理、服务、每日摘要",
+      "pt": "inferência, serviço, resumo diário"
+     },
+     "tree_desc": {
+      "en": "INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md",
+      "es": "INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md",
+      "de": "INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md",
+      "fr": "INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md",
+      "it": "INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md",
+      "ja": "INFERENCE_BOUNDARY.md、SERVICE.md, DAILY_SUMMARY.md",
+      "zh": "INFERENCE_BOUNDARY.md、SERVICE.md, DAILY_SUMMARY.md",
+      "pt": "INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md"
      }
     },
     {

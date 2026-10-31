@@ -1,0 +1,49 @@
+{
+  "enabled": false,
+  "language": "en",
+  "summary": {
+    "serious_severities": [
+      "high",
+      "critical"
+    ],
+    "serious_codes": [
+      "intrusion",
+      "tamper",
+      "fire",
+      "panic"
+    ],
+    "peak_count": 3,
+    "link_gap_s": 30.0,
+    "outlier_mad_k": 6.0,
+    "outlier_min_scale": 0.5,
+    "outlier_min_samples": 8
+  },
+  "patterns": {
+    "hourly_repeat_min_hours": 3,
+    "hourly_repeat_tolerance_min": 5,
+    "intermittent_min_faults": 3,
+    "intermittent_max_gap_s": 1800.0,
+    "sensor_fault_codes": [
+      "sensor_fault",
+      "sensor_stuck",
+      "sensor_dead",
+      "sensor_noise"
+    ],
+    "link_loss_min": 3,
+    "false_alarm_min": 3,
+    "false_alarm_codes": [
+      "false_alarm",
+      "pet",
+      "wind"
+    ],
+    "consumption_window": 8,
+    "consumption_sigma": 3.0,
+    "consumption_min_ratio": 1.5
+  },
+  "ai": {
+    "enabled": false,
+    "provider": "simulated",
+    "allow_external": false,
+    "redact_names": []
+  }
+}

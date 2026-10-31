@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-130%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.2.8-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**正直さのチェック - 今日動いているもの:** 判断レイヤーと動き検出器は実在し、テストされています（80 件）。観察サービスは **CM5 テストベンチで動作**しており、システムの警戒中に実際の IP カメラの小さなグレーフレームを見て、レーダーと照らし合わせた動きを報告します。人と猫や枝の区別はできません。**検出モデルはまだなく**、Jetson、TensorRT、そこでデコードした RTSP ストリームでは何も動いていません。
+**正直さのチェック - 今日動いているもの:** 判断レイヤーと動き検出器は実在し、テストされています（130 件）。観察サービスは **CM5 テストベンチで動作**しており、システムの警戒中に実際の IP カメラの小さなグレーフレームを見て、レーダーと照らし合わせた動きを報告します。人と猫や枝の区別はできません。**検出モデルはまだなく**、Jetson、TensorRT、そこでデコードした RTSP ストリームでは何も動いていません。
 
 ---
 
@@ -40,7 +40,7 @@
 | 成熟度 | 確立 |
 | 役割 | 観察サービス：レーダーと合わせて動きを評価し、推奨のみ |
 | 技術 | Python 3.11+（標準ライブラリのみ） |
-| テスト | 80 件（`python -m unittest discover -s tests`） |
+| テスト | 130 件（`python -m unittest discover -s tests`） |
 | 契約 | ARMOR-SERVER のクライアント：`/api/v1/ai/` の 3 ルート。呼び出されることはありません |
 | 動作環境 | CM5 テストベンチ（サービスとして。ARMOR-DEVOPS 参照）または任意のコンピューター |
 | 実機での確認 | CM5 テストベンチで実際の IP カメラとともにサービスとして動作（動きのみ）。Jetson 上では何もありません |
@@ -57,7 +57,7 @@
 | 領域 | 状態 | ここでの意味 |
 |---|---|---|
 | ソフトウェア | 🟡 | 動き検出と判断の層は CM5 テストベンチ上でサービスとして動いていますが、検出モデルはまだありません。人と猫や枝の区別はできません。 |
-| テスト | 🟢 | 80 件のテストが通ります（`python -m unittest discover -s tests`）。 |
+| テスト | 🟢 | 130 件のテストが通ります（`python -m unittest discover -s tests`）。 |
 | ハードウェア | 🟡 | 警戒中は、CM5 テストベンチの実際の IP カメラの小さなグレー画像を見ています。Jetson、TensorRT、デコードした RTSP ストリームではまだ何も動かしていません。 |
 | 連携 | 🟡 | レーダーと照合した動きの結果をテストベンチのサーバーに報告します。 |
 | セキュリティ | 🟡 | サービスは決して動作しません（すべての判定が `authorizes_action = false` を持つ）。24 文字未満のトークンと、`https://` でも同一マシンでもないサーバーアドレスを拒否し、画像は保存しません。テスト済みで、第三者レビューはありません。 |
@@ -72,6 +72,7 @@
 * **推奨のみ：**判断には常に `authorizes_action = false` が付きます。中央サーバーがすべての動作を認証・認可します。
 * **チェックサムで検証されるエンジン：**ビルド済みの TensorRT エンジンは、存在し、空でなく、`engines.json` があればその SHA-256 と一致するときだけ受け付けます。何もコンパイルもダウンロードもしません。
 * **何が悪いかを伝えるサービス：**新しい問題が変わるたびに報告し（`unreachable`、`unauthorized` など）、終われば*サーバーがまた応答する*と伝えます。JSONL ワーカーは番号付きで説明付きの結果を保ち、不正な行がストリームを止めることはありません。
+* **イベントの日次サマリー（任意、既定ではオフ）：** `--daily-summary FILE --summary-config 設定` は 1 日のイベント（アラーム、通信断、測定値、消費電力）を、種類・ゾーン・時間帯別の集計、重大なアラーム、通信が途切れたノード、外れた測定値、消費のピークにまとめ、8 言語のテンプレートによるテキストと、根拠付きの説明可能な 5 つのパターン（毎時同じ時刻に繰り返すアラーム、断続的に故障するセンサー、通信断を繰り返すノード、繰り返す誤報、移動平均を大きく上回る消費）を出します。しきい値はすべて設定ファイルにあります。AI プロバイダーの任意メモも既定でオフです。同梱されるのは模擬プロバイダーだけで、明示的なスイッチなしには何も外へ出ず、名前・アドレス・認証情報は先に除去されます。
 
 ## 🧩 A.R.M.O.R. での役割
 
@@ -133,9 +134,10 @@ ARMOR-SERVER-AI は家が警戒中にカメラの動きを見張る部分です�
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                 # 80 件
-echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli  # 1 行から判定を得る
-python -m armor_server_ai.service --once                                                             # 観察サービスを 1 巡
+python -m unittest discover -s tests                                                                      # 130 件
+echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # 1 行から判定を得る
+python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # 設定で enabled にするまで拒否し、その後は 1 日のサマリー
+python -m armor_server_ai.service --once                                                                  # 観察サービスを 1 巡
 ```
 
 [推論の境界](docs/INFERENCE_BOUNDARY.md)と[サービス](docs/SERVICE.md)を参照してください。
@@ -143,7 +145,7 @@ python -m armor_server_ai.service --once                                        
 ## 🧪 テスト
 
 ```powershell
-python -m unittest discover -s tests  # 80 件
+python -m unittest discover -s tests  # 130 件
 python -I tools/armor_ci_validate.py
 ```
 
@@ -153,6 +155,8 @@ python -I tools/armor_ci_validate.py
 | `test_service_http.py` | 21 | サーバーとの接続、アドレス規則、巡回、設定 |
 | `test_vision_profile.py` | 20 | ヒステリシス付き昼夜、融合ポリシー、ワーカー |
 | `test_cli_worker.py` | 10 | JSON Lines ワーカーと不正な行 |
+| `test_characterization_cli.py` | 9 | 日次サマリー以前のワーカーとサービスの挙動 |
+| `test_daily_summary.py` | 41 | 日次サマリー：厳密な入力、合計が合う集計、決定性、根拠付きパターン、8 言語、秘匿化、AI スイッチ |
 | `test_ignore_zones.py`, `test_registry.py` | 13 | 無視ゾーンと検証済み TensorRT エンジン |
 
 GitHub Actions は push と pull request のたびに A.R.M.O.R. の基本検査（マニフェスト、バージョン、変更履歴、README の一致）と、プロジェクト自身のビルドとテストを実行します。 ソースは型チェッカーを通ります。`python -m mypy src` は何も報告しません。
@@ -188,9 +192,16 @@ ARMOR-SERVER-AI/
 │   ├── profile.py                 昼間か低照度（ヒステリシス付き）
 │   ├── policy.py                  融合：ignore、review、high
 │   ├── engine_registry.py         SHA-256 で検証する TensorRT エンジン
-│   └── cli.py                     JSON Lines ワーカー
-├── tests/                         80 件：動き、ポリシー、サービス、ワーカー
-├── docs/                          INFERENCE_BOUNDARY.md、SERVICE.md
+│   ├── cli.py                     JSON Lines ワーカー
+│   ├── daily.py                   日次サマリーのコマンドとレポート
+│   ├── daily_events.py            1 日のイベントの厳密な読み込み
+│   ├── daily_summary.py           集計、重大アラーム、説明可能なパターン
+│   ├── daily_text.py              8 言語のテキスト（テンプレート）
+│   ├── daily_ai.py                プロバイダーの任意メモ（既定でオフ）
+│   ├── daily_config.py            設定ファイル（厳密）
+│   └── redact.py                  名前・アドレス・認証情報の除去
+├── tests/                         130 件：動き、ポリシー、サービス、ワーカー、日次サマリー
+├── docs/                          INFERENCE_BOUNDARY.md、SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         共通の CI 検査とツール
 ├── images/                        バナー、アイコン、README の画像
 ├── .github/                       CI ワークフロー、ダッシュボード通知、Issue と Pull Request のテンプレート
@@ -249,6 +260,7 @@ README とテキストは、英語、スペイン語、フランス語、イタ�
 ## 📚 ドキュメント
 
 * [推論の境界](docs/INFERENCE_BOUNDARY.md)：ここで決めること、モデルに任せること
+* [日次サマリー](docs/DAILY_SUMMARY.md)：1 日のイベント、パターン、任意の AI メモ（既定でオフ）
 * [サービス](docs/SERVICE.md)：観察サービスとその設定
 * [機能マトリクス：何が証明され、何が証明されていないか](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/CAPABILITY_MATRIX.md)
 * [プロジェクトカタログ：バージョンと、リポジトリ同士の依存関係](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/PROJECT_CATALOG.md)

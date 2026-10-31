@@ -27,3 +27,5 @@ Its token (`ARMOR_AI_TOKEN`) opens three routes of the server (the context, one 
 holds no camera address or password. A failure of the server or of a camera (its picture, FFmpeg) is said once on stderr and tried again, whatever shape the answer has; nothing here can take the house down. `ARMOR_AI_SERVER_URL` must be `https://` or `http://` to this same machine (the token must not cross a network in clear). With many cameras the pass is spaced out so the server's limit of 200 pictures a minute is never reached.
 
 On the bench it is installed by `ARMOR-DEVOPS/scripts/install_cm5.sh --with-ai`.
+
+The separate daily report of the events of a day (`--daily-summary`, off by default) is described in DAILY_SUMMARY.md; it is not part of the service and opens no route.

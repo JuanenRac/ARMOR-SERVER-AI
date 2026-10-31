@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 o posterior">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Lenguaje">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-80%20passing-2ea44f.svg" alt="Pruebas">
+  <img src="https://img.shields.io/badge/Tests-130%20passing-2ea44f.svg" alt="Pruebas">
   <img src="https://img.shields.io/badge/Version-0.2.8-0f6cbd.svg" alt="Versión">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Madurez">
 </p>
 
 ---
 
-**Comprobación de honestidad - qué funciona hoy:** La capa de decisión y el detector de movimiento son reales y están probados (80 tests), y el servicio de observación **corre en el banco de pruebas de la CM5**: con el sistema armado mira pequeños fotogramas grises de las cámaras IP reales e informa del movimiento sopesado con los radares. No distingue a una persona de un gato o una rama: **todavía no hay modelo de detección**, y nada ha corrido en la Jetson, TensorRT ni un flujo RTSP decodificado allí.
+**Comprobación de honestidad - qué funciona hoy:** La capa de decisión y el detector de movimiento son reales y están probados (130 tests), y el servicio de observación **corre en el banco de pruebas de la CM5**: con el sistema armado mira pequeños fotogramas grises de las cámaras IP reales e informa del movimiento sopesado con los radares. No distingue a una persona de un gato o una rama: **todavía no hay modelo de detección**, y nada ha corrido en la Jetson, TensorRT ni un flujo RTSP decodificado allí.
 
 ---
 
@@ -40,7 +40,7 @@
 | Madurez | Establecido |
 | Función | Servicio de observación: movimiento ponderado con los radares, solo recomienda |
 | Tecnología | Python 3.11+, solo biblioteca estándar |
-| Pruebas | 80 (`python -m unittest discover -s tests`) |
+| Pruebas | 130 (`python -m unittest discover -s tests`) |
 | Contrato | Cliente de ARMOR-SERVER: 3 rutas bajo `/api/v1/ai/`; nadie lo llama |
 | Funciona en | El banco de la CM5 (como servicio, ver ARMOR-DEVOPS) o cualquier ordenador |
 | En hardware real | Corriendo como servicio en el banco de pruebas de la CM5 con las cámaras IP reales (solo movimiento); nada en una Jetson |
@@ -57,7 +57,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 | Área | Estado | Qué significa aquí |
 |---|---|---|
 | Software | 🟡 | El detector de movimiento y la capa de decisión funcionan como servicio en el banco de pruebas CM5, pero aún no hay modelo de detección: no distingue una persona de un gato o una rama. |
-| Pruebas | 🟢 | Pasan 80 pruebas (`python -m unittest discover -s tests`). |
+| Pruebas | 🟢 | Pasan 130 pruebas (`python -m unittest discover -s tests`). |
 | Hardware | 🟡 | Mientras el sistema está armado mira fotogramas grises diminutos de las cámaras IP reales del banco de pruebas CM5; nada ha funcionado en una Jetson, con TensorRT ni sobre un flujo RTSP decodificado. |
 | Integración | 🟡 | Informa del movimiento ponderado con los radares al servidor del banco de pruebas. |
 | Seguridad | 🟡 | El servicio nunca actúa (toda decisión lleva `authorizes_action = false`), rechaza un token de menos de 24 caracteres y una dirección de servidor que no sea `https://` ni esta misma máquina, y nunca guarda una imagen; probado, sin revisión independiente. |
@@ -72,6 +72,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 * **Solo recomendaciones:** una decisión siempre lleva `authorizes_action = false`. El servidor central autentica y autoriza cada acción.
 * **Motores verificados por suma de comprobación:** los motores TensorRT precompilados solo se aceptan si existen, no están vacíos y, con un `engines.json`, coinciden con su SHA-256. No se compila ni descarga nada.
 * **Un servicio que dice qué va mal:** informa de cada problema nuevo cuando cambia (`unreachable`, `unauthorized`…) y *el servidor responde otra vez* cuando termina; un trabajador JSONL guarda resultados numerados y explicados y una línea mala nunca detiene el flujo.
+* **Un resumen diario de los eventos (opcional, apagado por defecto):** `--daily-summary FICHERO --summary-config AJUSTES` convierte los eventos de un día (alarmas, pérdidas de enlace, lecturas, consumo) en recuentos por tipo, zona y hora, las alarmas graves, los nodos que perdieron el enlace, las lecturas apartadas y los picos de consumo, un texto con plantillas en los ocho idiomas y cinco patrones explicables (la misma alarma a la misma hora, un sensor que falla de forma intermitente, un nodo que pierde el enlace una y otra vez, falsas alarmas recurrentes, consumo muy por encima de su media móvil), cada uno con su evidencia y todos los umbrales en el fichero de ajustes. Una nota opcional de un proveedor de IA también está apagada por defecto: solo se incluye un proveedor simulado, nada sale sin un interruptor explícito y antes se eliminan nombres, direcciones y credenciales.
 
 ## 🧩 Papel en A.R.M.O.R.
 
@@ -113,7 +114,7 @@ ARMOR-SERVER-AI es la parte que vigila el movimiento en las cámaras mientras la
 | `python -m armor_server_ai.service [--once]` | - | el servicio de observación; `--once` hace una pasada y termina |
 | `python -m armor_server_ai.cli [--radar-tracks N]` | - | líneas JSON por la entrada estándar (`{"label", "confidence", "lux", "radar_tracks"}`), una decisión numerada y explicada por línea |
 
-Una decisión es `{severity: ignore | review | high, reasons, authorizes_action: false}`. Etiquetas: `person`, `vehicle`, `animal`, `unknown`, `motion`. **Fusión:** `high` es una persona con confianza de 0,80 o más y al menos una pista de radar, o un movimiento fuerte y una pista de radar que coinciden; `review` es una detección confiada (0,55 de día, 0,45 con poca luz) o una pista de radar sin nada visto; el movimiento simple cuenta una pista de radar solo con un 30 % de certeza (cerca del 3 % de la imagen).
+Una decisión es `{severity: ignore | review | high, reasons, authorizes_action: false}`. Etiquetas: `person`, `vehicle`, `animal`, `unknown`, `motion`. **Fusión:** `high` es una persona con confianza de 0,130 o más y al menos una pista de radar, o un movimiento fuerte y una pista de radar que coinciden; `review` es una detección confiada (0,55 de día, 0,45 con poca luz) o una pista de radar sin nada visto; el movimiento simple cuenta una pista de radar solo con un 30 % de certeza (cerca del 3 % de la imagen).
 
 ## ⚙️ Configuración
 
@@ -125,7 +126,7 @@ Una decisión es `{severity: ignore | review | high, reasons, authorizes_action:
 | `ARMOR_AI_CONFIRM_FRAMES` | 2 (1-20) | fotogramas seguidos que deben mostrar movimiento antes de avisar |
 | `ARMOR_AI_COOLDOWN_S` | 60 (0-3600) | segundos antes de avisar otra vez de la misma cámara |
 
-Un valor fuera de rango detiene el servicio con `<NOMBRE> must be between a and b`. Los umbrales de la decisión (0,80, 0,55, 0,45, la barra del radar del 30 %) y del movimiento (18, 1 %, 60 %) son constantes del código descritas en [docs/INFERENCE_BOUNDARY.md](docs/INFERENCE_BOUNDARY.md); los ajustes del servicio están en [docs/SERVICE.md](docs/SERVICE.md).
+Un valor fuera de rango detiene el servicio con `<NOMBRE> must be between a and b`. Los umbrales de la decisión (0,130, 0,55, 0,45, la barra del radar del 30 %) y del movimiento (18, 1 %, 60 %) son constantes del código descritas en [docs/INFERENCE_BOUNDARY.md](docs/INFERENCE_BOUNDARY.md); los ajustes del servicio están en [docs/SERVICE.md](docs/SERVICE.md).
 
 ## 🚀 Inicio rápido
 
@@ -133,9 +134,10 @@ Un valor fuera de rango detiene el servicio con `<NOMBRE> must be between a and 
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                 # 80 pruebas
-echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli  # una decisión desde una línea
-python -m armor_server_ai.service --once                                                             # una pasada del servicio de observación
+python -m unittest discover -s tests                                                                      # 130 pruebas
+echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # una decisión desde una línea
+python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # se niega hasta que los ajustes digan enabled; después, el resumen de un día
+python -m armor_server_ai.service --once                                                                  # una pasada del servicio de observación
 ```
 
 Mira el [límite de la inferencia](docs/INFERENCE_BOUNDARY.md) y el [servicio](docs/SERVICE.md).
@@ -143,7 +145,7 @@ Mira el [límite de la inferencia](docs/INFERENCE_BOUNDARY.md) y el [servicio](d
 ## 🧪 Pruebas
 
 ```powershell
-python -m unittest discover -s tests  # 80 pruebas
+python -m unittest discover -s tests  # 130 pruebas
 python -I tools/armor_ci_validate.py
 ```
 
@@ -153,6 +155,8 @@ python -I tools/armor_ci_validate.py
 | `test_service_http.py` | 21 | el enlace con el servidor, las reglas de dirección, las pasadas y los ajustes |
 | `test_vision_profile.py` | 20 | día y noche con histéresis, la política de fusión y el trabajador |
 | `test_cli_worker.py` | 10 | el trabajador de líneas JSON y sus líneas malas |
+| `test_characterization_cli.py` | 9 | el trabajador y el servicio tal como eran antes del resumen diario |
+| `test_daily_summary.py` | 41 | el resumen diario: entrada estricta, recuentos que suman, determinismo, patrones con evidencia, los ocho idiomas, redacción y el interruptor de IA |
 | `test_ignore_zones.py`, `test_registry.py` | 13 | zonas a ignorar y motores TensorRT comprobados |
 
 GitHub Actions ejecuta la base de A.R.M.O.R. en cada push y pull request: la validación del manifiesto, la versión, el registro de cambios y la paridad de los README, y luego la compilación y las pruebas del propio proyecto. Los fuentes pasan el comprobador de tipos: `python -m mypy src` no informa de nada.
@@ -188,9 +192,16 @@ ARMOR-SERVER-AI/
 │   ├── profile.py                 día o poca luz, con histéresis
 │   ├── policy.py                  fusión: ignore, review, high
 │   ├── engine_registry.py         motores TensorRT comprobados por SHA-256
-│   └── cli.py                     el trabajador de líneas JSON
-├── tests/                         80 pruebas: movimiento, política, servicio, trabajador
-├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md
+│   ├── cli.py                     el trabajador de líneas JSON
+│   ├── daily.py                   el comando y el informe del resumen diario
+│   ├── daily_events.py            lectura estricta de los eventos de un día
+│   ├── daily_summary.py           recuentos, alarmas graves y patrones explicables
+│   ├── daily_text.py              el texto en ocho idiomas, con plantillas
+│   ├── daily_ai.py                la nota opcional de un proveedor, apagada
+│   ├── daily_config.py            el fichero de ajustes, estricto
+│   └── redact.py                  nombres, direcciones y credenciales eliminados
+├── tests/                         130 pruebas: movimiento, política, servicio, trabajador, resumen diario
+├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         las comprobaciones de CI y las herramientas compartidas
 ├── images/                        banner, icono y las imágenes del README
 ├── .github/                       flujo de CI, aviso al panel, plantillas de incidencias y pull requests
@@ -249,6 +260,7 @@ El README y los textos existen en inglés, español, francés, italiano, alemán
 ## 📚 Documentación
 
 * [Límite de la inferencia](docs/INFERENCE_BOUNDARY.md): qué se decide aquí y qué se deja a un modelo
+* [El resumen diario](docs/DAILY_SUMMARY.md): los eventos de un día, los patrones y la nota opcional de IA, apagada por defecto
 * [El servicio](docs/SERVICE.md): el servicio de observación y sus ajustes
 * [Matriz de capacidades: qué está demostrado y qué no](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/CAPABILITY_MATRIX.md)
 * [Catálogo de proyectos: versiones y cómo dependen unos repositorios de otros](https://github.com/JuanenRac/ARMOR-DOCS/blob/main/docs/PROJECT_CATALOG.md)

@@ -4,6 +4,9 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A daily summary of the events, off by default:** `armor-vision-policy --daily-summary FILE --summary-config CONFIG` builds a deterministic structured summary of a day (counts by type, zone and hour, serious alarms, nodes that lost their link, outlying readings, consumption peaks), a readable text from templates in the eight languages, and five explainable patterns (the same alarm at the same time of the hour, a sensor that fails on and off, a node that keeps losing its link, recurring false alarms in a zone, consumption far above its moving average), each with its evidence. It reads the alarm events or the messages of the simulator, refuses a malformed file whole, and does nothing until the settings file says `"enabled": true`; every threshold is in that file. The policy worker and the observation service are unchanged.
+- **An optional AI note with a simulated provider:** off by default; only a deterministic provider that calls nothing ships, a provider that would send data away is refused unless `ai.allow_external` is set (off by default), and everything that leaves is redacted first (names, addresses, credentials).
+- The documents explain it (`docs/DAILY_SUMMARY.md`, `docs/daily_summary.example.json`). Tests: 130 (before 80), with characterization of the worker and the service, properties with a fixed seed and the redaction.
 - **The type check of the service comes out clean:** the camera URL is quoted with `urllib.parse.quote` and the nodes that cover a camera are read from an empty tuple when the entry names none; the behaviour is the same.
 - **The documentation covers the type check:** the README (eight languages) says the sources pass `python -m mypy src`.
 ## [0.2.8] - The lights of Project status follow the evidence of the manifest, the universal README in the eight languages and the pictures from shared tools
