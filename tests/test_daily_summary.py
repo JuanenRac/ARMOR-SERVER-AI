@@ -4,6 +4,7 @@ import contextlib
 import copy
 import io
 import json
+import os
 import random
 import re
 import string
@@ -421,6 +422,23 @@ class ReportAndCliTests(unittest.TestCase):
     def test_flags_of_the_summary_without_it_are_a_usage_error_and_the_worker_is_untouched(self):
         for flag in (["--summary-config", "x"], ["--lang", "en"], ["--json"]):
             self.assertEqual(self.cli(*flag)[0], 2)
+
+    def test_the_command_a_server_runs_prints_one_report_with_three_keys_and_nothing_else_on_failure(self):
+        """A server that offers the summary runs `python -m armor_server_ai.cli --daily-summary FILE --summary-config CONFIG --json --lang CODE`: the shape of that is what it relies on."""
+        env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1] / "src")}
+
+        def run(*extra):
+            return subprocess.run([sys.executable, "-m", "armor_server_ai.cli", "--daily-summary", str(self.events), "--json", *extra], capture_output=True, text=True, env=env, timeout=60)
+
+        good = run("--summary-config", str(self.config()), "--lang", "pt")
+        self.assertEqual(good.returncode, 0, good.stderr)
+        self.assertEqual(sorted(json.loads(good.stdout)), ["findings", "summary", "text"])
+        off = run("--summary-config", str(self.dir / "off.json"))
+        self.assertEqual((off.returncode, off.stdout), (2, ""))
+        self.config(enabled=False)
+        refused = run("--summary-config", str(self.dir / "config.json"))
+        self.assertEqual((refused.returncode, refused.stdout), (2, ""))
+        self.assertIn("is off", refused.stderr)
 
     def test_the_summary_makes_no_network_call(self):
         with mock.patch("socket.socket", side_effect=AssertionError("network")), mock.patch("urllib.request.urlopen", side_effect=AssertionError("network")):

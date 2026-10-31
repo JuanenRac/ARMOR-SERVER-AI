@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 o successiva">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Linguaggio">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-130%20passing-2ea44f.svg" alt="Test">
+  <img src="https://img.shields.io/badge/Tests-131%20passing-2ea44f.svg" alt="Test">
   <img src="https://img.shields.io/badge/Version-0.2.9-0f6cbd.svg" alt="Versione">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturità">
 </p>
 
 ---
 
-**Controllo di onestà - cosa funziona oggi:** Lo strato decisionale e il rilevatore di movimento sono reali e provati (130 test), e il servizio di osservazione **gira sul banco di prova CM5**: a sistema inserito guarda minuscoli fotogrammi grigi delle vere telecamere IP e riferisce il movimento pesato con i radar. Non distingue una persona da un gatto o da un ramo: **non c'è ancora un modello di rilevamento**, e nulla ha girato sul Jetson, TensorRT o su un flusso RTSP decodificato lì.
+**Controllo di onestà - cosa funziona oggi:** Lo strato decisionale e il rilevatore di movimento sono reali e provati (131 test), e il servizio di osservazione **gira sul banco di prova CM5**: a sistema inserito guarda minuscoli fotogrammi grigi delle vere telecamere IP e riferisce il movimento pesato con i radar. Non distingue una persona da un gatto o da un ramo: **non c'è ancora un modello di rilevamento**, e nulla ha girato sul Jetson, TensorRT o su un flusso RTSP decodificato lì.
 
 ---
 
@@ -40,7 +40,7 @@
 | Maturità | Consolidato |
 | Ruolo | Servizio di osservazione: movimento pesato con i radar, solo raccomandazioni |
 | Tecnologia | Python 3.11+, solo libreria standard |
-| Test | 130 (`python -m unittest discover -s tests`) |
+| Test | 131 (`python -m unittest discover -s tests`) |
 | Contratto | Client di ARMOR-SERVER: 3 rotte sotto `/api/v1/ai/`; nessuno lo chiama |
 | Gira su | Il banco di prova CM5 (come servizio, vedi ARMOR-DEVOPS) o qualsiasi computer |
 | Su hardware reale | Gira come servizio sul banco di prova CM5 con le vere telecamere IP (solo movimento); nulla su un Jetson |
@@ -57,7 +57,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟡 | Il rilevatore di movimento e il livello decisionale girano come servizio sul banco di prova CM5, ma non c'è ancora un modello di rilevamento: non distingue una persona da un gatto o da un ramo. |
-| Test | 🟢 | Superano 130 test (`python -m unittest discover -s tests`). |
+| Test | 🟢 | Superano 131 test (`python -m unittest discover -s tests`). |
 | Hardware | 🟡 | Mentre il sistema è inserito guarda minuscoli fotogrammi grigi delle telecamere IP reali del banco di prova CM5; nulla ha girato su una Jetson, con TensorRT o su un flusso RTSP decodificato. |
 | Integrazione | 🟡 | Riferisce al server del banco di prova il movimento ponderato con i radar. |
 | Sicurezza | 🟡 | Il servizio non agisce mai (ogni decisione porta `authorizes_action = false`), rifiuta un token sotto i 24 caratteri e un indirizzo di server che non sia `https://` o questa stessa macchina, e non salva mai un'immagine; provato, senza revisione indipendente. |
@@ -114,7 +114,7 @@ ARMOR-SERVER-AI è la parte che sorveglia il movimento sulle telecamere mentre l
 | `python -m armor_server_ai.service [--once]` | - | il servizio di osservazione; `--once` fa un passaggio e termina |
 | `python -m armor_server_ai.cli [--radar-tracks N]` | - | righe JSON sullo standard input (`{"label", "confidence", "lux", "radar_tracks"}`), una decisione numerata e spiegata per riga |
 
-Una decisione è `{severity: ignore | review | high, reasons, authorizes_action: false}`. Etichette: `person`, `vehicle`, `animal`, `unknown`, `motion`. **Fusione:** `high` è una persona con confidenza di almeno 0,130 e almeno una traccia radar, oppure un forte movimento e una traccia radar concordi; `review` è un rilevamento sicuro (0,55 di giorno, 0,45 con poca luce) o una traccia radar senza nulla di visto; il semplice movimento conta una traccia radar solo con il 30 % di certezza (circa il 3 % dell'immagine).
+Una decisione è `{severity: ignore | review | high, reasons, authorizes_action: false}`. Etichette: `person`, `vehicle`, `animal`, `unknown`, `motion`. **Fusione:** `high` è una persona con confidenza di almeno 0,131 e almeno una traccia radar, oppure un forte movimento e una traccia radar concordi; `review` è un rilevamento sicuro (0,55 di giorno, 0,45 con poca luce) o una traccia radar senza nulla di visto; il semplice movimento conta una traccia radar solo con il 30 % di certezza (circa il 3 % dell'immagine).
 
 ## ⚙️ Configurazione
 
@@ -126,7 +126,7 @@ Una decisione è `{severity: ignore | review | high, reasons, authorizes_action:
 | `ARMOR_AI_CONFIRM_FRAMES` | 2 (1-20) | fotogrammi consecutivi che devono mostrare movimento prima di segnalare |
 | `ARMOR_AI_COOLDOWN_S` | 60 (0-3600) | secondi prima di segnalare di nuovo la stessa telecamera |
 
-Un valore fuori intervallo ferma il servizio con `<NOME> must be between a and b`. Le soglie della decisione (0,130, 0,55, 0,45, la barra radar del 30 %) e del movimento (18, 1 %, 60 %) sono costanti del codice descritte in [docs/INFERENCE_BOUNDARY.md](docs/INFERENCE_BOUNDARY.md); le impostazioni del servizio sono in [docs/SERVICE.md](docs/SERVICE.md).
+Un valore fuori intervallo ferma il servizio con `<NOME> must be between a and b`. Le soglie della decisione (0,131, 0,55, 0,45, la barra radar del 30 %) e del movimento (18, 1 %, 60 %) sono costanti del codice descritte in [docs/INFERENCE_BOUNDARY.md](docs/INFERENCE_BOUNDARY.md); le impostazioni del servizio sono in [docs/SERVICE.md](docs/SERVICE.md).
 
 ## 🚀 Avvio rapido
 
@@ -134,7 +134,7 @@ Un valore fuori intervallo ferma il servizio con `<NOME> must be between a and b
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                      # 130 test
+python -m unittest discover -s tests                                                                      # 131 test
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # una decisione da una riga
 python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # rifiuta finché le impostazioni non dicono enabled; poi il riepilogo di un giorno
 python -m armor_server_ai.service --once                                                                  # un passaggio del servizio di osservazione
@@ -145,7 +145,7 @@ Vedi il [confine dell'inferenza](docs/INFERENCE_BOUNDARY.md) e il [servizio](doc
 ## 🧪 Test
 
 ```powershell
-python -m unittest discover -s tests  # 130 test
+python -m unittest discover -s tests  # 131 test
 python -I tools/armor_ci_validate.py
 ```
 
@@ -156,7 +156,7 @@ python -I tools/armor_ci_validate.py
 | `test_vision_profile.py` | 20 | giorno e notte con isteresi, la politica di fusione e il worker |
 | `test_cli_worker.py` | 10 | il worker di righe JSON e le sue righe errate |
 | `test_characterization_cli.py` | 9 | il worker e il servizio com'erano prima del riepilogo giornaliero |
-| `test_daily_summary.py` | 41 | il riepilogo giornaliero: input rigoroso, conteggi che tornano, determinismo, schemi con prove, otto lingue, oscuramento e interruttore IA |
+| `test_daily_summary.py` | 42 | il riepilogo giornaliero: input rigoroso, conteggi che tornano, determinismo, schemi con prove, otto lingue, oscuramento e interruttore IA |
 | `test_ignore_zones.py`, `test_registry.py` | 13 | zone da ignorare e motori TensorRT verificati |
 
 GitHub Actions esegue la base A.R.M.O.R. a ogni push e pull request: la validazione di manifesto, versione, registro delle modifiche e parità dei README, poi la compilazione e i test del progetto. I sorgenti superano il controllo dei tipi: `python -m mypy src` non segnala nulla.
@@ -200,7 +200,7 @@ ARMOR-SERVER-AI/
 │   ├── daily_ai.py                la nota facoltativa di un fornitore, spenta
 │   ├── daily_config.py            il file di impostazioni, rigoroso
 │   └── redact.py                  nomi, indirizzi e credenziali rimossi
-├── tests/                         130 test: movimento, politica, servizio, worker, riepilogo giornaliero
+├── tests/                         131 test: movimento, politica, servizio, worker, riepilogo giornaliero
 ├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         i controlli CI e gli strumenti condivisi
 ├── images/                        banner, icona e immagini del README

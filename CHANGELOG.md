@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- The daily summary is documented as the command a server runs to offer it (`--json`, three keys in the report, exit code 2 and an empty standard output on any refusal), and a test pins that shape. The summary itself is unchanged.
+
 ## [0.2.9] - A daily summary of the events with five explainable patterns and an optional note of a simulated AI provider, off by default, and a clean type check
 
 - **A daily summary of the events, off by default:** `armor-vision-policy --daily-summary FILE --summary-config CONFIG` builds a deterministic structured summary of a day (counts by type, zone and hour, serious alarms, nodes that lost their link, outlying readings, consumption peaks), a readable text from templates in the eight languages, and five explainable patterns (the same alarm at the same time of the hour, a sensor that fails on and off, a node that keeps losing its link, recurring false alarms in a zone, consumption far above its moving average), each with its evidence. It reads the alarm events or the messages of the simulator, refuses a malformed file whole, and does nothing until the settings file says `"enabled": true`; every threshold is in that file. The policy worker and the observation service are unchanged.

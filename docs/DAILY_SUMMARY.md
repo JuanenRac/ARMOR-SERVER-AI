@@ -9,7 +9,7 @@ python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config my-sett
 python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config my-settings.json --json                    # the structured report
 ```
 
-There is no new network route: the service in this repository listens on no port, so the summary is a command, not a `GET /summary/daily`. A server that wants to offer it would run the command (or call `armor_server_ai.daily.daily_report`) and keep its own authentication.
+There is no network route in this repository: the service here listens on no port, so the summary is a command. A server offers it by running the command with `--json` (`python -m armor_server_ai.cli --daily-summary FILE --summary-config CONFIG --json [--lang CODE]`, which calls `armor_server_ai.daily.daily_report`) and keeps its own authentication: ARMOR-SERVER does it as `GET /api/v1/summary/daily`, behind a security option that is off by default and for administrators and operators only. The report has exactly three keys (`summary`, `findings`, `text`, plus `ai_note` when the AI note is on); an exit code of 2 means the summary is off in the settings file or something was malformed, and nothing is printed on the standard output.
 
 ## The events
 
