@@ -22,7 +22,7 @@
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Linguaggio">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
   <img src="https://img.shields.io/badge/Tests-130%20passing-2ea44f.svg" alt="Test">
-  <img src="https://img.shields.io/badge/Version-0.2.8-0f6cbd.svg" alt="Versione">
+  <img src="https://img.shields.io/badge/Version-0.2.9-0f6cbd.svg" alt="Versione">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturità">
 </p>
 
@@ -36,7 +36,7 @@
 
 | | |
 |---|---|
-| Versione | `0.2.8` |
+| Versione | `0.2.9` |
 | Maturità | Consolidato |
 | Ruolo | Servizio di osservazione: movimento pesato con i radar, solo raccomandazioni |
 | Tecnologia | Python 3.11+, solo libreria standard |
