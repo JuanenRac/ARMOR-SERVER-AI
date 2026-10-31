@@ -20,3 +20,7 @@ line-length = 240
 
 [tool.ruff.lint]
 select = ["E", "F", "W"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src"]

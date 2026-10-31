@@ -227,7 +227,7 @@ class Watcher:
                 return error
         order = sorted(wanted)
         with ThreadPoolExecutor(max_workers=min(4, max(1, len(order)))) as pool:
-            frames = dict(zip(order, pool.map(fetch, order)))
+            frames = dict(zip(order, pool.map(fetch, order), strict=False))
         for camera_id in order:
             frame = frames[camera_id]
             if isinstance(frame, ServerError):
