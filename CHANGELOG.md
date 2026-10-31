@@ -5,6 +5,7 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 - **The type check of the service comes out clean:** the camera URL is quoted with `urllib.parse.quote` and the nodes that cover a camera are read from an empty tuple when the entry names none; the behaviour is the same.
+- **The documentation covers the type check:** the README (eight languages) says the sources pass `python -m mypy src`.
 ## [0.2.8] - The lights of Project status follow the evidence of the manifest, the universal README in the eight languages and the pictures from shared tools
 
 - **The lights of Project status follow the evidence of the manifest:** the manifest says how far the repository has been shown to work (`evidence`: `host-test`, `simulator`, `bench` or `field`) and the validator fails when a light is above what that evidence and the maturity allow (`tools/status_lights.py`), so a green that never ran on real hardware cannot come back.

@@ -155,7 +155,7 @@ python -I tools/armor_ci_validate.py
 | `test_cli_worker.py` | 10 | JSON 行工作进程及其坏行 |
 | `test_ignore_zones.py`, `test_registry.py` | 13 | 忽略区与经校验的 TensorRT 引擎 |
 
-GitHub Actions 在每次推送和拉取请求时运行 A.R.M.O.R. 基线：清单、版本、更新日志和 README 一致性的校验，然后是项目自身的构建和测试。
+GitHub Actions 在每次推送和拉取请求时运行 A.R.M.O.R. 基线：清单、版本、更新日志和 README 一致性的校验，然后是项目自身的构建和测试。 源代码通过类型检查：`python -m mypy src` 没有任何报告。
 
 ## 🏗️ 构建与发布
 

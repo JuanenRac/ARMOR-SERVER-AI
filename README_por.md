@@ -155,7 +155,7 @@ python -I tools/armor_ci_validate.py
 | `test_cli_worker.py` | 10 | o trabalhador de linhas JSON e as suas linhas más |
 | `test_ignore_zones.py`, `test_registry.py` | 13 | zonas a ignorar e motores TensorRT verificados |
 
-O GitHub Actions executa a base do A.R.M.O.R. em cada push e pull request: a validação do manifesto, da versão, do registo de alterações e da paridade dos README, e depois a compilação e os testes do próprio projeto.
+O GitHub Actions executa a base do A.R.M.O.R. em cada push e pull request: a validação do manifesto, da versão, do registo de alterações e da paridade dos README, e depois a compilação e os testes do próprio projeto. As fontes passam o verificador de tipos: `python -m mypy src` não reporta nada.
 
 ## 🏗️ Compilação e publicação
 

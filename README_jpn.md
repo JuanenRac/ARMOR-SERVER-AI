@@ -155,7 +155,7 @@ python -I tools/armor_ci_validate.py
 | `test_cli_worker.py` | 10 | JSON Lines ワーカーと不正な行 |
 | `test_ignore_zones.py`, `test_registry.py` | 13 | 無視ゾーンと検証済み TensorRT エンジン |
 
-GitHub Actions は push と pull request のたびに A.R.M.O.R. の基本検査（マニフェスト、バージョン、変更履歴、README の一致）と、プロジェクト自身のビルドとテストを実行します。
+GitHub Actions は push と pull request のたびに A.R.M.O.R. の基本検査（マニフェスト、バージョン、変更履歴、README の一致）と、プロジェクト自身のビルドとテストを実行します。 ソースは型チェッカーを通ります。`python -m mypy src` は何も報告しません。
 
 ## 🏗️ ビルドとリリース
 

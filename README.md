@@ -155,7 +155,7 @@ python -I tools/armor_ci_validate.py
 | `test_cli_worker.py` | 10 | the JSON-lines worker and its bad lines |
 | `test_ignore_zones.py`, `test_registry.py` | 13 | zones to ignore, and the checked TensorRT engines |
 
-GitHub Actions runs the A.R.M.O.R. baseline on every push and pull request: the validation of the manifest, version, changelog and README parity, then the project's own build and tests.
+GitHub Actions runs the A.R.M.O.R. baseline on every push and pull request: the validation of the manifest, version, changelog and README parity, then the project's own build and tests. The sources pass the type checker: `python -m mypy src` reports nothing.
 
 ## 🏗️ Build & Release
 
