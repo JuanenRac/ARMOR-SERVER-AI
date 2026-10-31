@@ -106,7 +106,7 @@ class HttpServer:
         return json.loads(self._call("GET", "/api/v1/ai/context", limit=MAX_CONTEXT_BYTES))
 
     def frame(self, camera_id: str) -> bytes:
-        return self._call("GET", f"/api/v1/ai/cameras/{urllib.request.quote(camera_id, safe='')}/frame", limit=FRAME_BYTES)
+        return self._call("GET", f"/api/v1/ai/cameras/{urllib.parse.quote(camera_id, safe='')}/frame", limit=FRAME_BYTES)
 
     def observe(self, report: dict) -> dict:
         return json.loads(self._call("POST", "/api/v1/ai/observations", report))
@@ -252,7 +252,7 @@ class Watcher:
         # track on the other side of the house is not evidence about this camera, so the site design has to say which nodes cover each camera.
         covering = camera.get("nodes")
         declared = isinstance(covering, list) and any(isinstance(item, str) and item for item in covering)
-        nodes = [node for node in online if (node.get("id") or node.get("node_id")) in covering] if declared else []
+        nodes = [node for node in online if (node.get("id") or node.get("node_id")) in (covering or ())] if declared else []
         self._say_nodes(camera_id, declared)
         tracks = sum(_count(node.get("targets")) for node in nodes)
         lux_values = [float(node["lux"]) for node in nodes if isinstance(node.get("lux"), (int, float))]
