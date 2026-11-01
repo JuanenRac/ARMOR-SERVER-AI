@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.3.0] - The daily summary is documented as the command a server runs to offer it
+
 - The daily summary is documented as the command a server runs to offer it (`--json`, three keys in the report, exit code 2 and an empty standard output on any refusal), and a test pins that shape. The summary itself is unchanged.
 
 ## [0.2.9] - A daily summary of the events with five explainable patterns and an optional note of a simulated AI provider, off by default, and a clean type check
