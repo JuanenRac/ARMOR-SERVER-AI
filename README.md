@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-131%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-134%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.3.0-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**Honesty check - what runs today:** The decision layer and the movement detector are real and tested (131 tests), and the observation service **runs on the CM5 test bench**: while the system is armed it looks at tiny grey frames of the real IP cameras and reports movement weighed with the radars. It cannot tell a person from a cat or a branch: **there is no detection model yet**, and nothing has run on the Jetson, TensorRT or an RTSP stream decoded there.
+**Honesty check - what runs today:** The decision layer and the movement detector are real and tested (134 tests), and the observation service **runs on the CM5 test bench**: while the system is armed it looks at tiny grey frames of the real IP cameras and reports movement weighed with the radars. It cannot tell a person from a cat or a branch: **there is no detection model yet**, and nothing has run on the Jetson, TensorRT or an RTSP stream decoded there.
 
 ---
 
@@ -40,7 +40,7 @@
 | Maturity | Established |
 | Role | Observation service: movement weighed with the radars, recommendations only |
 | Stack | Python 3.11+, standard library only |
-| Tests | 131 (`python -m unittest discover -s tests`) |
+| Tests | 134 (`python -m unittest discover -s tests`) |
 | Contract | Client of ARMOR-SERVER: 3 routes under `/api/v1/ai/`; it is never called |
 | Runs on | The CM5 test bench (as a service, see ARMOR-DEVOPS) or any computer |
 | On real hardware | Running as a service on the CM5 test bench with the real IP cameras (movement only); nothing on a Jetson |
@@ -57,7 +57,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟡 | The movement detector and the decision layer run as a service on the CM5 test bench, but there is no detection model yet: it cannot tell a person from a cat or a branch. |
-| Tests | 🟢 | 131 tests pass (`python -m unittest discover -s tests`). |
+| Tests | 🟢 | 134 tests pass (`python -m unittest discover -s tests`). |
 | Hardware | 🟡 | While the system is armed it looks at tiny grey frames of the real IP cameras of the CM5 test bench; nothing has run on a Jetson, with TensorRT or on a decoded RTSP stream. |
 | Integration | 🟡 | It reports movement weighed with the radars to the server of the CM5 test bench. |
 | Security | 🟡 | The service never acts (every decision carries `authorizes_action = false`), refuses a token under 24 characters and a server address that is not `https://` or this same machine, and never stores a picture; tested, with no independent review. |
@@ -125,6 +125,7 @@ A decision is `{severity: ignore | review | high, reasons, authorizes_action: fa
 | `ARMOR_AI_INTERVAL_S` | 3 (1-60) | seconds between passes; with many cameras the pass is spaced out to stay under 200 frames a minute |
 | `ARMOR_AI_CONFIRM_FRAMES` | 2 (1-20) | frames in a row that must show movement before it is told |
 | `ARMOR_AI_COOLDOWN_S` | 60 (0-3600) | seconds before the same camera is told again |
+| `ARMOR_AI_STATUS_FILE` | none (off) | a file the service rewrites after each pass with how it is doing (passes, observations told and failed, cameras with a problem, the last problem with the server); also `--status-file` |
 
 A value out of range stops the service with `<NAME> must be between a and b`. The thresholds of the decision (0.80, 0.55, 0.45, the radar bar of 30 %) and of the movement (18, 1 %, 60 %) are constants of the code described in [docs/INFERENCE_BOUNDARY.md](docs/INFERENCE_BOUNDARY.md); the settings of the service are in [docs/SERVICE.md](docs/SERVICE.md).
 
@@ -134,7 +135,7 @@ A value out of range stops the service with `<NAME> must be between a and b`. Th
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                      # 131 tests
+python -m unittest discover -s tests                                                                      # 134 tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # one decision from a line
 python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # refuses until the settings say enabled; then the summary of a day
 python -m armor_server_ai.service --once                                                                  # one pass of the observation service
@@ -145,7 +146,7 @@ See the [inference boundary](docs/INFERENCE_BOUNDARY.md) and the [service](docs/
 ## 🧪 Testing
 
 ```powershell
-python -m unittest discover -s tests  # 131 tests
+python -m unittest discover -s tests  # 134 tests
 python -I tools/armor_ci_validate.py
 ```
 
@@ -200,7 +201,7 @@ ARMOR-SERVER-AI/
 │   ├── daily_ai.py                the optional note of a provider, off by default
 │   ├── daily_config.py            the settings file, strict
 │   └── redact.py                  names, addresses and credentials removed
-├── tests/                         131 tests: motion, policy, service, worker, daily summary
+├── tests/                         134 tests: motion, policy, service, worker, daily summary
 ├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         the shared CI checks and project tooling
 ├── images/                        banner, icon and the pictures of the README

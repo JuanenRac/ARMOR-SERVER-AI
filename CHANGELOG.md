@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The service can say how it is doing:** with `--status-file FILE` (or `ARMOR_AI_STATUS_FILE`; off by default) it rewrites a small JSON file after each pass with the passes made, whether the system is armed, the observations told and the ones that failed, the cameras with a problem and the last problem with the server. The file holds no picture, address or secret, is written whole and renamed into place, and a file that cannot be written is said once and never stops the watching. Tests: 134 (before 131).
+
 ## [0.3.0] - The daily summary is documented as the command a server runs to offer it
 
 - The daily summary is documented as the command a server runs to offer it (`--json`, three keys in the report, exit code 2 and an empty standard output on any refusal), and a test pins that shape. The summary itself is unchanged.

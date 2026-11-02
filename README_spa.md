@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 o posterior">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Lenguaje">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-131%20passing-2ea44f.svg" alt="Pruebas">
+  <img src="https://img.shields.io/badge/Tests-134%20passing-2ea44f.svg" alt="Pruebas">
   <img src="https://img.shields.io/badge/Version-0.3.0-0f6cbd.svg" alt="Versión">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Madurez">
 </p>
 
 ---
 
-**Comprobación de honestidad - qué funciona hoy:** La capa de decisión y el detector de movimiento son reales y están probados (131 tests), y el servicio de observación **corre en el banco de pruebas de la CM5**: con el sistema armado mira pequeños fotogramas grises de las cámaras IP reales e informa del movimiento sopesado con los radares. No distingue a una persona de un gato o una rama: **todavía no hay modelo de detección**, y nada ha corrido en la Jetson, TensorRT ni un flujo RTSP decodificado allí.
+**Comprobación de honestidad - qué funciona hoy:** La capa de decisión y el detector de movimiento son reales y están probados (134 tests), y el servicio de observación **corre en el banco de pruebas de la CM5**: con el sistema armado mira pequeños fotogramas grises de las cámaras IP reales e informa del movimiento sopesado con los radares. No distingue a una persona de un gato o una rama: **todavía no hay modelo de detección**, y nada ha corrido en la Jetson, TensorRT ni un flujo RTSP decodificado allí.
 
 ---
 
@@ -40,7 +40,7 @@
 | Madurez | Establecido |
 | Función | Servicio de observación: movimiento ponderado con los radares, solo recomienda |
 | Tecnología | Python 3.11+, solo biblioteca estándar |
-| Pruebas | 131 (`python -m unittest discover -s tests`) |
+| Pruebas | 134 (`python -m unittest discover -s tests`) |
 | Contrato | Cliente de ARMOR-SERVER: 3 rutas bajo `/api/v1/ai/`; nadie lo llama |
 | Funciona en | El banco de la CM5 (como servicio, ver ARMOR-DEVOPS) o cualquier ordenador |
 | En hardware real | Corriendo como servicio en el banco de pruebas de la CM5 con las cámaras IP reales (solo movimiento); nada en una Jetson |
@@ -57,7 +57,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 | Área | Estado | Qué significa aquí |
 |---|---|---|
 | Software | 🟡 | El detector de movimiento y la capa de decisión funcionan como servicio en el banco de pruebas CM5, pero aún no hay modelo de detección: no distingue una persona de un gato o una rama. |
-| Pruebas | 🟢 | Pasan 131 pruebas (`python -m unittest discover -s tests`). |
+| Pruebas | 🟢 | Pasan 134 pruebas (`python -m unittest discover -s tests`). |
 | Hardware | 🟡 | Mientras el sistema está armado mira fotogramas grises diminutos de las cámaras IP reales del banco de pruebas CM5; nada ha funcionado en una Jetson, con TensorRT ni sobre un flujo RTSP decodificado. |
 | Integración | 🟡 | Informa del movimiento ponderado con los radares al servidor del banco de pruebas. |
 | Seguridad | 🟡 | El servicio nunca actúa (toda decisión lleva `authorizes_action = false`), rechaza un token de menos de 24 caracteres y una dirección de servidor que no sea `https://` ni esta misma máquina, y nunca guarda una imagen; probado, sin revisión independiente. |
@@ -114,7 +114,7 @@ ARMOR-SERVER-AI es la parte que vigila el movimiento en las cámaras mientras la
 | `python -m armor_server_ai.service [--once]` | - | el servicio de observación; `--once` hace una pasada y termina |
 | `python -m armor_server_ai.cli [--radar-tracks N]` | - | líneas JSON por la entrada estándar (`{"label", "confidence", "lux", "radar_tracks"}`), una decisión numerada y explicada por línea |
 
-Una decisión es `{severity: ignore | review | high, reasons, authorizes_action: false}`. Etiquetas: `person`, `vehicle`, `animal`, `unknown`, `motion`. **Fusión:** `high` es una persona con confianza de 0,131 o más y al menos una pista de radar, o un movimiento fuerte y una pista de radar que coinciden; `review` es una detección confiada (0,55 de día, 0,45 con poca luz) o una pista de radar sin nada visto; el movimiento simple cuenta una pista de radar solo con un 30 % de certeza (cerca del 3 % de la imagen).
+Una decisión es `{severity: ignore | review | high, reasons, authorizes_action: false}`. Etiquetas: `person`, `vehicle`, `animal`, `unknown`, `motion`. **Fusión:** `high` es una persona con confianza de 0,80 o más y al menos una pista de radar, o un movimiento fuerte y una pista de radar que coinciden; `review` es una detección confiada (0,55 de día, 0,45 con poca luz) o una pista de radar sin nada visto; el movimiento simple cuenta una pista de radar solo con un 30 % de certeza (cerca del 3 % de la imagen).
 
 ## ⚙️ Configuración
 
@@ -125,8 +125,9 @@ Una decisión es `{severity: ignore | review | high, reasons, authorizes_action:
 | `ARMOR_AI_INTERVAL_S` | 3 (1-60) | segundos entre pasadas; con muchas cámaras la pasada se alarga para no pasar de 200 imágenes por minuto |
 | `ARMOR_AI_CONFIRM_FRAMES` | 2 (1-20) | fotogramas seguidos que deben mostrar movimiento antes de avisar |
 | `ARMOR_AI_COOLDOWN_S` | 60 (0-3600) | segundos antes de avisar otra vez de la misma cámara |
+| `ARMOR_AI_STATUS_FILE` | ninguno (apagado) | un archivo que el servicio reescribe tras cada pasada con su estado (pasadas, avisos hechos y fallidos, cámaras con problema, el último problema con el servidor); también `--status-file` |
 
-Un valor fuera de rango detiene el servicio con `<NOMBRE> must be between a and b`. Los umbrales de la decisión (0,131, 0,55, 0,45, la barra del radar del 30 %) y del movimiento (18, 1 %, 60 %) son constantes del código descritas en [docs/INFERENCE_BOUNDARY.md](docs/INFERENCE_BOUNDARY.md); los ajustes del servicio están en [docs/SERVICE.md](docs/SERVICE.md).
+Un valor fuera de rango detiene el servicio con `<NOMBRE> must be between a and b`. Los umbrales de la decisión (0,80, 0,55, 0,45, la barra del radar del 30 %) y del movimiento (18, 1 %, 60 %) son constantes del código descritas en [docs/INFERENCE_BOUNDARY.md](docs/INFERENCE_BOUNDARY.md); los ajustes del servicio están en [docs/SERVICE.md](docs/SERVICE.md).
 
 ## 🚀 Inicio rápido
 
@@ -134,7 +135,7 @@ Un valor fuera de rango detiene el servicio con `<NOMBRE> must be between a and 
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                      # 131 pruebas
+python -m unittest discover -s tests                                                                      # 134 pruebas
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # una decisión desde una línea
 python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # se niega hasta que los ajustes digan enabled; después, el resumen de un día
 python -m armor_server_ai.service --once                                                                  # una pasada del servicio de observación
@@ -145,7 +146,7 @@ Mira el [límite de la inferencia](docs/INFERENCE_BOUNDARY.md) y el [servicio](d
 ## 🧪 Pruebas
 
 ```powershell
-python -m unittest discover -s tests  # 131 pruebas
+python -m unittest discover -s tests  # 134 pruebas
 python -I tools/armor_ci_validate.py
 ```
 
@@ -200,7 +201,7 @@ ARMOR-SERVER-AI/
 │   ├── daily_ai.py                la nota opcional de un proveedor, apagada
 │   ├── daily_config.py            el fichero de ajustes, estricto
 │   └── redact.py                  nombres, direcciones y credenciales eliminados
-├── tests/                         131 pruebas: movimiento, política, servicio, trabajador, resumen diario
+├── tests/                         134 pruebas: movimiento, política, servicio, trabajador, resumen diario
 ├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         las comprobaciones de CI y las herramientas compartidas
 ├── images/                        banner, icono y las imágenes del README

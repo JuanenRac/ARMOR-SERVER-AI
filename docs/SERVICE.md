@@ -15,6 +15,8 @@ anything about the house: the server raises the alarm (or not) and every action 
 5. Reports it (`POST /api/v1/ai/observations`), at most once every `ARMOR_AI_COOLDOWN_S` (60) per camera. The server raises a `camera_motion` alarm - once until it is closed -
    which reaches the app, Studio, Telegram and Home Assistant.
 
+`--status-file FILE` (or `ARMOR_AI_STATUS_FILE`) is off until given. With it, after each pass the service rewrites FILE as one JSON line: `passes`, `armed`, `cameras`, `observations_sent`, `observations_failed`, `cameras_with_problem` (id and what is wrong), `server_problem` (the last one, or null) and `updated` (UTC). A monitor or the operator can read it without asking the service anything; it holds no picture, address or secret.
+
 ## What it is not
 
 It is **not a person detector**: it cannot tell a person from a cat, a car or a branch. It is movement plus the radars, which is a good start and will false-alarm now and then

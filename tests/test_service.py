@@ -3,7 +3,7 @@ import unittest
 
 from armor_server_ai.motion import FRAME_BYTES, brightness, changed_ratio, estimate_lux, motion_confidence
 from armor_server_ai.policy import VisualObservation, decide
-from armor_server_ai.service import CameraState, ServerError, Watcher, look
+from armor_server_ai.service import CameraState, ServerError, Watcher, look, write_status
 
 
 def frame(value: int, moved: int = 0, to: int = 255) -> bytes:
@@ -207,6 +207,51 @@ class WatcherTests(unittest.TestCase):
         self.assertIsNone(look(CameraState(), "cam-gate", server.frames["cam-gate"][0], 0.0, 1, 200.0, 1, 0.0))
         with self.assertRaises(ValueError):
             Watcher(server, confirm_frames=0)
+
+    def test_the_status_counts_the_passes_the_observations_and_the_cameras_with_a_problem(self):
+        server = Server(tracks=1, lux=200.0, cameras=("cam-gate", "cam-yard"))
+        server.frames["cam-gate"] = [frame(100), frame(100, moved=400)]
+        server.failing.add("cam-yard")
+        watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+        self.assertEqual(watcher.status()["armed"], None)
+        watcher.run_once()
+        watcher.run_once()
+        status = watcher.status()
+        self.assertEqual((status["passes"], status["armed"], status["cameras"], status["observations_sent"], status["observations_failed"]), (2, True, 2, 1, 0))
+        self.assertEqual(status["cameras_with_problem"], {"cam-yard": "no picture (camera_not_answering)"})
+        disarmed = Server(mode="disarmed")
+        quiet = Watcher(disarmed)
+        quiet.run_once()
+        self.assertFalse(quiet.status()["armed"])
+
+    def test_an_observation_that_could_not_be_told_is_counted(self):
+        server = Server(tracks=1, lux=200.0)
+        server.frames["cam-gate"] = [frame(100), frame(100, moved=400)]
+
+        def refuse(report):
+            raise ServerError(503, "busy")
+        server.observe = refuse
+        watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+        watcher.run_once()
+        watcher.run_once()
+        self.assertEqual((watcher.status()["observations_sent"], watcher.status()["observations_failed"]), (0, 1))
+
+    def test_the_status_file_is_written_whole_and_has_no_secret_or_picture(self):
+        import json
+        import tempfile
+        from pathlib import Path
+        server = Server(tracks=1, lux=200.0)
+        server.frames["cam-gate"] = [frame(100)]
+        watcher = Watcher(server)
+        watcher.run_once()
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "status.json"
+            write_status(path, watcher, "", now=lambda: 0.0)
+            body = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual((body["passes"], body["server_problem"], body["updated"]), (1, None, "1970-01-01T00:00:00Z"))
+            write_status(path, watcher, "502 server_down", now=lambda: 60.0)
+            self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["server_problem"], "502 server_down")
+            self.assertEqual([item.name for item in Path(folder).iterdir()], ["status.json"])   # no half-written neighbour left behind
 
 
 if __name__ == "__main__":

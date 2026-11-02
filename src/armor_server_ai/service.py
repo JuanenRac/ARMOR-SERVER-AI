@@ -29,6 +29,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Callable, Protocol
 
 from .motion import FRAME_BYTES, changed_ratio, estimate_lux, mask_from_zones, motion_confidence
@@ -186,6 +187,15 @@ class Watcher:
         self._problems: dict[str, str] = {}   # what was last said about each camera, so it is said again only when it changes
         self.camera_count = 0
         self._undeclared: dict[str, bool] = {}   # per camera: whether it was last said that it names no nodes
+        self.passes = 0                          # passes that reached the server and read what it answered
+        self.sent = 0                            # observations the server took
+        self.failed = 0                          # observations that could not be told
+        self.armed: bool | None = None           # what the server said in the last pass (None before the first)
+
+    def status(self) -> dict:
+        """What the service can say about itself, for an operator or a monitor: no picture, no address, no secret."""
+        return {"passes": self.passes, "armed": self.armed, "cameras": self.camera_count, "observations_sent": self.sent, "observations_failed": self.failed,
+                "cameras_with_problem": {camera_id: problem for camera_id, problem in sorted(self._problems.items()) if problem}}
 
     def _say_camera(self, camera_id: str, problem: str) -> None:
         if self._problems.get(camera_id, "") == problem:
@@ -206,6 +216,8 @@ class Watcher:
         context = self._server.context()
         if not isinstance(context, dict):
             raise ServerError(0, "bad_context")
+        self.passes += 1
+        self.armed = context.get("mode") == "armed"
         if context.get("mode") != "armed":
             self._cameras.clear()   # when it is armed again the first frame has nothing old to be compared with
             self.camera_count = 0
@@ -269,9 +281,19 @@ class Watcher:
             answer = self._server.observe(report)
         except ServerError as error:
             state.last_report_s = sighting.previous_report_s   # it never arrived: the next movement is told, not held back by a cooldown it did not earn
+            self.failed += 1
             print(f"armor-ai: the observation of {camera_id} could not be told ({error.code})", file=sys.stderr, flush=True)
             return []
+        self.sent += 1
         return [{**report, "answer": answer}]
+
+
+def write_status(path: Path, watcher: Watcher, server_problem: str, now: Callable[[], float] = time.time) -> None:
+    """The status file: written whole to a neighbour and renamed, so a reader never sees half of it. A file that cannot be written is said once on stderr by the caller; it never stops the watching."""
+    body = {**watcher.status(), "server_problem": server_problem or None, "updated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now()))}
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(json.dumps(body, separators=(",", ":")) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
 
 
 def _number(name: str, default: float, minimum: float, maximum: float) -> float:
@@ -290,6 +312,8 @@ def _number(name: str, default: float, minimum: float, maximum: float) -> float:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="A.R.M.O.R. observation service: movement on the cameras, weighed with the radars")
     parser.add_argument("--once", action="store_true", help="one pass, printing what it saw")
+    parser.add_argument("--status-file", type=Path, default=Path(os.environ["ARMOR_AI_STATUS_FILE"]) if os.environ.get("ARMOR_AI_STATUS_FILE") else None,
+                        help="after each pass write here, as JSON, how the service is doing (passes, observations told and failed, cameras with a problem, the last problem with the server); off when not given (also ARMOR_AI_STATUS_FILE)")
     args = parser.parse_args(argv)
     token = os.environ.get("ARMOR_AI_TOKEN", "").strip()
     if len(token) < 24:
@@ -312,6 +336,7 @@ def main(argv: list[str] | None = None) -> None:
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
     print(f"armor-ai: watching, every {interval:g} s", file=sys.stderr, flush=True)
+    status_unwritable = False
     last_problem = ""   # what was said last, so it is said again only when it changes, and when it is over
     while not stopping:
         try:
@@ -324,6 +349,15 @@ def main(argv: list[str] | None = None) -> None:
             if problem != last_problem:
                 print(f"armor-ai: the server could not be asked ({problem})", file=sys.stderr, flush=True)
                 last_problem = problem
+        if args.status_file is not None:
+            try:
+                write_status(args.status_file, watcher, last_problem)
+            except OSError as error:
+                if not status_unwritable:
+                    print(f"armor-ai: the status file could not be written ({error.strerror or type(error).__name__})", file=sys.stderr, flush=True)
+                status_unwritable = True
+            else:
+                status_unwritable = False
         time.sleep(max(interval, min_interval_s(watcher.camera_count)))
 
 
