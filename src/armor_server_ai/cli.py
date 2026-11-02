@@ -23,6 +23,8 @@ from .policy import VisualObservation, decide
 from .profile import ProfileSelector
 
 MAX_LINE_BYTES = 4096
+EVENT_SCHEMA_V1 = "armor.vision.event/v1"
+EVENT_SCHEMA_V2 = "armor.vision.event/v2"
 
 
 def process(lines: Iterable[str], radar_tracks: int, selector: ProfileSelector, clock: float = 0.0) -> Iterable[dict]:
@@ -37,6 +39,11 @@ def process(lines: Iterable[str], radar_tracks: int, selector: ProfileSelector, 
             item = json.loads(line)
             if not isinstance(item, dict):
                 raise ValueError("each line must be a JSON object")
+            schema = item.get("schema")
+            if schema not in (None, EVENT_SCHEMA_V1, EVENT_SCHEMA_V2):
+                raise ValueError(f"unknown schema {str(schema)[:60]!r}")
+            if schema == EVENT_SCHEMA_V2 and "radar_tracks" not in item:
+                raise ValueError("a second-version event must carry radar_tracks")
             lux = float(item["lux"])
             profile = selector.update(lux, clock + number)
             observation = VisualObservation(

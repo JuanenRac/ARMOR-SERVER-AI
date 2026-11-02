@@ -14,6 +14,27 @@ def run(lines, radar_tracks=0):
     return list(cli.process(lines, radar_tracks, ProfileSelector()))
 
 
+class SchemaVersionTests(unittest.TestCase):
+    def line(self, **extra):
+        return json.dumps({"label": "person", "confidence": 0.95, "lux": 2, "camera_id": "cam-01", **extra})
+
+    def test_the_first_version_without_tracks_is_accepted(self):
+        (result,) = run([self.line(schema="armor.vision.event/v1")], radar_tracks=1)
+        self.assertEqual(result["severity"], "high")
+
+    def test_the_second_version_carries_its_own_tracks(self):
+        (result,) = run([self.line(schema="armor.vision.event/v2", radar_tracks=2)], radar_tracks=0)
+        self.assertEqual(result["severity"], "high")
+
+    def test_the_second_version_without_tracks_is_refused(self):
+        (result,) = run([self.line(schema="armor.vision.event/v2")])
+        self.assertIn("radar_tracks", result["error"])
+
+    def test_an_unknown_schema_is_refused(self):
+        (result,) = run([self.line(schema="armor.vision.event/v9")])
+        self.assertIn("unknown schema", result["error"])
+
+
 class ProcessTests(unittest.TestCase):
     def test_a_person_in_the_dark_with_a_radar_track_is_high_and_authorizes_nothing(self):
         (result,) = run([json.dumps({"label": "person", "confidence": 0.95, "lux": 2, "camera_id": "cam-01"})], radar_tracks=1)
