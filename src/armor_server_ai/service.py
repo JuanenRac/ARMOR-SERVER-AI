@@ -184,6 +184,7 @@ class Watcher:
             raise ValueError("confirm_frames must be at least 1")
         self._server, self._confirm, self._cooldown, self._clock = server, confirm_frames, cooldown_s, clock
         self._cameras: dict[str, CameraState] = {}
+        self._masks: dict[str, tuple[str, bytes | None]] = {}   # per camera: the zones as they were last seen and the mask made from them
         self._problems: dict[str, str] = {}   # what was last said about each camera, so it is said again only when it changes
         self.camera_count = 0
         self._undeclared: dict[str, bool] = {}   # per camera: whether it was last said that it names no nodes
@@ -196,6 +197,15 @@ class Watcher:
         """What the service can say about itself, for an operator or a monitor: no picture, no address, no secret."""
         return {"passes": self.passes, "armed": self.armed, "cameras": self.camera_count, "observations_sent": self.sent, "observations_failed": self.failed,
                 "cameras_with_problem": {camera_id: problem for camera_id, problem in sorted(self._problems.items()) if problem}}
+
+    def _mask(self, camera_id: str, zones) -> bytes | None:
+        """The ignore mask of a camera, worked out again only when its zones change."""
+        key = repr(zones)
+        cached = self._masks.get(camera_id)
+        if cached is None or cached[0] != key:
+            cached = (key, mask_from_zones(zones))
+            self._masks[camera_id] = cached
+        return cached[1]
 
     def _say_camera(self, camera_id: str, problem: str) -> None:
         if self._problems.get(camera_id, "") == problem:
@@ -231,6 +241,7 @@ class Watcher:
         wanted = set(cameras)
         for gone in set(self._cameras) - wanted:
             del self._cameras[gone]
+            self._masks.pop(gone, None)
         # The pictures are asked for at the same time: a camera that does not answer made every other one wait its whole timeout, pass after pass.
         def fetch(camera_id: str):
             try:
@@ -270,7 +281,7 @@ class Watcher:
         lux_values = [float(node["lux"]) for node in nodes if isinstance(node.get("lux"), (int, float))]
         node_lux = min(lux_values) if lux_values else None
         # the zones of the picture that the person said to ignore (a tree, a road, a screen): the server sends them with the camera
-        ignore = mask_from_zones(camera.get("ignore"))
+        ignore = self._mask(camera_id, camera.get("ignore"))
         state = self._cameras.setdefault(camera_id, CameraState())
         sighting = look(state, camera_id, frame, self._clock(), tracks, node_lux, self._confirm, self._cooldown, ignore)
         if sighting is None:

@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-134%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-137%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.3.0-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**诚实性检查 - 今天真正能运行的部分：** 决策层和移动检测器是真实的并经过测试（134 个测试），观察服务**在 CM5 测试台上运行**：系统布防时，它查看真实 IP 摄像头的微小灰度帧，并报告与雷达对照权衡后的移动。它分不清人、猫或树枝：**目前还没有检测模型**，也没有任何东西在 Jetson、TensorRT 或在那里解码的 RTSP 流上运行过。
+**诚实性检查 - 今天真正能运行的部分：** 决策层和移动检测器是真实的并经过测试（137 个测试），观察服务**在 CM5 测试台上运行**：系统布防时，它查看真实 IP 摄像头的微小灰度帧，并报告与雷达对照权衡后的移动。它分不清人、猫或树枝：**目前还没有检测模型**，也没有任何东西在 Jetson、TensorRT 或在那里解码的 RTSP 流上运行过。
 
 ---
 
@@ -40,7 +40,7 @@
 | 成熟度 | 成熟 |
 | 角色 | 观察服务：结合雷达评估运动，只给出建议 |
 | 技术栈 | Python 3.11+，仅用标准库 |
-| 测试 | 134 项（`python -m unittest discover -s tests`） |
+| 测试 | 137 项（`python -m unittest discover -s tests`） |
 | 契约 | ARMOR-SERVER 的客户端：`/api/v1/ai/` 下的 3 条路由；从不被调用 |
 | 运行位置 | CM5 测试台（作为服务，见 ARMOR-DEVOPS）或任何计算机 |
 | 真实硬件 | 在 CM5 测试台上用真实 IP 摄像头作为服务运行（仅移动）；Jetson 上没有任何东西 |
@@ -57,7 +57,7 @@
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟡 | 移动检测器和决策层在 CM5 测试台上作为服务运行，但目前还没有检测模型：它分不清人、猫或树枝。 |
-| 测试 | 🟢 | 134 项测试通过（`python -m unittest discover -s tests`）。 |
+| 测试 | 🟢 | 137 项测试通过（`python -m unittest discover -s tests`）。 |
 | 硬件 | 🟡 | 系统布防期间，它查看 CM5 测试台上真实 IP 摄像头的微小灰度画面；还没有在 Jetson、TensorRT 或解码后的 RTSP 流上运行过。 |
 | 集成 | 🟡 | 它把结合雷达加权后的移动情况报告给测试台的服务器。 |
 | 安全 | 🟡 | 该服务从不执行动作（每个判定都带 `authorizes_action = false`），拒绝少于 24 个字符的令牌以及既不是 `https://` 也不是本机的服务器地址，从不保存图片；已测试，没有独立审查。 |
@@ -135,7 +135,7 @@ ARMOR-SERVER-AI 是在住宅布防时观察摄像头移动的部分。它从不�
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                      # 134 项
+python -m unittest discover -s tests                                                                      # 137 项
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # 从一行得到一个判定
 python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # 设置里启用之前会拒绝，之后给出一天的摘要
 python -m armor_server_ai.service --once                                                                  # 观察服务运行一轮
@@ -146,7 +146,7 @@ python -m armor_server_ai.service --once                                        
 ## 🧪 测试
 
 ```powershell
-python -m unittest discover -s tests  # 134 项
+python -m unittest discover -s tests  # 137 项
 python -I tools/armor_ci_validate.py
 ```
 
@@ -201,7 +201,7 @@ ARMOR-SERVER-AI/
 │   ├── daily_ai.py                提供方的可选备注（默认关闭）
 │   ├── daily_config.py            设置文件（严格）
 │   └── redact.py                  去除姓名、地址和凭据
-├── tests/                         134 项：运动、策略、服务、工作进程、每日摘要
+├── tests/                         137 项：运动、策略、服务、工作进程、每日摘要
 ├── docs/                          INFERENCE_BOUNDARY.md、SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         共用的 CI 检查和工具
 ├── images/                        横幅图、图标和 README 的图片

@@ -236,6 +236,56 @@ class WatcherTests(unittest.TestCase):
         watcher.run_once()
         self.assertEqual((watcher.status()["observations_sent"], watcher.status()["observations_failed"]), (0, 1))
 
+    def test_a_camera_that_is_refused_for_asking_too_often_is_skipped_and_asked_again(self):
+        server = Server(tracks=1, lux=200.0)
+        server.frames["cam-gate"] = [frame(100), frame(100, moved=400)]
+        refuse = [True]
+        original = server.frame
+
+        def limited(camera_id):
+            if refuse[0]:
+                refuse[0] = False
+                raise ServerError(429, "rate_limited")
+            return original(camera_id)
+        server.frame = limited
+        watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+        for _ in range(3):
+            watcher.run_once()
+        self.assertEqual(len(server.told), 1, "the refused pass is skipped and the next two frames are compared as usual")
+        self.assertEqual(watcher.status()["cameras_with_problem"], {})
+
+    def test_what_is_told_has_the_fields_and_limits_the_server_accepts(self):
+        server = Server(tracks=1, lux=200.0)
+        server.frames["cam-gate"] = [frame(100), frame(100, moved=400)]
+        watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+        watcher.run_once()
+        watcher.run_once()
+        report = server.told[0]
+        self.assertEqual(set(report) - {"answer"}, {"camera_id", "severity", "reasons", "profile", "motion", "radar_tracks"})
+        self.assertRegex(report["camera_id"], r"^[A-Za-z0-9._-]{3,80}$")
+        self.assertIn(report["severity"], ("review", "high"))
+        self.assertLessEqual(len(report["reasons"]), 5)
+        self.assertTrue(all(isinstance(reason, str) and len(reason) <= 200 for reason in report["reasons"]))
+        self.assertIn(report["profile"], ("daylight", "low-light"))
+        self.assertTrue(0.0 <= report["motion"] <= 1.0)
+        self.assertTrue(isinstance(report["radar_tracks"], int) and 0 <= report["radar_tracks"] <= 1000)
+
+    def test_the_ignore_mask_of_a_camera_is_made_once_and_again_only_when_its_zones_change(self):
+        from unittest import mock
+        server = Server(tracks=1, lux=200.0)
+        zones = [{"x": 0.0, "y": 0.0, "w": 0.5, "h": 0.5}]
+        base = server.context
+        server.context = lambda: {**base(), "cameras": [{"id": "cam-gate", "nodes": ["radar"], "ignore": zones}]}
+        server.frames["cam-gate"] = [frame(100)] * 4
+        watcher = Watcher(server, confirm_frames=1, cooldown_s=0.0)
+        with mock.patch("armor_server_ai.service.mask_from_zones", wraps=__import__("armor_server_ai.motion", fromlist=["x"]).mask_from_zones) as made:
+            for _ in range(3):
+                watcher.run_once()
+            self.assertEqual(made.call_count, 1)
+            zones[:] = [{"x": 0.5, "y": 0.5, "w": 0.5, "h": 0.5}]
+            watcher.run_once()
+            self.assertEqual(made.call_count, 2)
+
     def test_the_status_file_is_written_whole_and_has_no_secret_or_picture(self):
         import json
         import tempfile

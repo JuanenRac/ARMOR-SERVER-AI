@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The ignore mask of a camera is made once:** the mask of its ignore zones and the pixels that count under it are kept between frames and worked out again only when the zones change; what is detected is the same. Three more tests pin a camera refused for asking too often, the fields and limits of what is told to the server, and the mask being reused. Tests: 137 (before 134).
+
 - **The service can say how it is doing:** with `--status-file FILE` (or `ARMOR_AI_STATUS_FILE`; off by default) it rewrites a small JSON file after each pass with the passes made, whether the system is armed, the observations told and the ones that failed, the cameras with a problem and the last problem with the server. The file holds no picture, address or secret, is written whole and renamed into place, and a file that cannot be written is said once and never stops the watching. Tests: 134 (before 131).
 
 ## [0.3.0] - The daily summary is documented as the command a server runs to offer it

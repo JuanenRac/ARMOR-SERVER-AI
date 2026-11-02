@@ -11,6 +11,8 @@ Pure functions, so they are tested without a camera.
 
 from __future__ import annotations
 
+from functools import lru_cache
+
 FRAME_WIDTH = 64
 FRAME_HEIGHT = 36
 FRAME_BYTES = FRAME_WIDTH * FRAME_HEIGHT
@@ -54,6 +56,12 @@ def mask_from_zones(zones) -> bytes | None:
     return bytes(mask) if ignored else None
 
 
+@lru_cache(maxsize=64)
+def _kept_indices(mask: bytes) -> tuple[int, ...]:
+    """The indices of the pixels that count under a mask; the same mask comes back every frame of a camera, so it is worked out once."""
+    return tuple(index for index in range(FRAME_BYTES) if mask[index])
+
+
 def changed_ratio(previous: bytes, current: bytes, threshold: int = PIXEL_THRESHOLD, mask: bytes | None = None) -> float:
     """The share (0 to 1) of the pixels that changed by more than `threshold` between two frames. With a `mask` (see mask_from_zones) the pixels inside an ignore zone are left out of
     everything - the changes, the median that is taken away and the count the share is of - so a tree that waves in a corner of the picture is never movement."""
@@ -62,7 +70,7 @@ def changed_ratio(previous: bytes, current: bytes, threshold: int = PIXEL_THRESH
     if mask is not None:
         if len(mask) != FRAME_BYTES:
             raise ValueError(f"a mask is {FRAME_BYTES} bytes")
-        kept = [index for index in range(FRAME_BYTES) if mask[index]]
+        kept = _kept_indices(bytes(mask))
         if len(kept) < MIN_COUNTED_PIXELS:
             return 0.0
         differences = [current[index] - previous[index] for index in kept]
