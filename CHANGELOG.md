@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The launchers find the shared repository through `ARMOR_COMMON_DIR`:** `build`, `build-test`, `test` and `run` (`.sh` and `.bat`) use the folder named by that variable when it is set and the sibling `ARMOR-COMMON` folder otherwise, so a checkout with another layout builds without changing a file.
 ## [0.3.1] - The policy worker accepts both versions of the vision event, the ignore mask of a camera is made once and the service can report how it is doing in a small status file
 
 - **The policy worker accepts both versions of the vision event:** a line with `schema` `armor.vision.event/v1` takes the radar count the worker was started with, one with `armor.vision.event/v2` must bring its own `radar_tracks`, and any other `schema` is refused on that line only. Four tests pin it. Tests: 141 (before 137).
