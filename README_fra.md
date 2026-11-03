@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 ou ultérieure">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Langage">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-137%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-141%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.3.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturité">
 </p>
 
 ---
 
-**Vérification d'honnêteté - ce qui fonctionne aujourd'hui :** La couche de décision et le détecteur de mouvement sont réels et testés (137 tests), et le service d'observation **tourne sur le banc de test CM5** : système armé, il regarde de minuscules images grises des vraies caméras IP et signale le mouvement pesé avec les radars. Il ne distingue pas une personne d'un chat ou d'une branche : **il n'y a pas encore de modèle de détection**, et rien n'a tourné sur le Jetson, TensorRT ni un flux RTSP décodé là.
+**Vérification d'honnêteté - ce qui fonctionne aujourd'hui :** La couche de décision et le détecteur de mouvement sont réels et testés (141 tests), et le service d'observation **tourne sur le banc de test CM5** : système armé, il regarde de minuscules images grises des vraies caméras IP et signale le mouvement pesé avec les radars. Il ne distingue pas une personne d'un chat ou d'une branche : **il n'y a pas encore de modèle de détection**, et rien n'a tourné sur le Jetson, TensorRT ni un flux RTSP décodé là.
 
 ---
 
@@ -40,7 +40,7 @@
 | Maturité | Établi |
 | Rôle | Service d'observation : mouvement pondéré avec les radars, recommandations seulement |
 | Technologie | Python 3.11+, bibliothèque standard seule |
-| Tests | 137 (`python -m unittest discover -s tests`) |
+| Tests | 141 (`python -m unittest discover -s tests`) |
 | Contrat | Client d'ARMOR-SERVER : 3 routes sous `/api/v1/ai/` ; personne ne l'appelle |
 | Fonctionne sur | Le banc d'essai CM5 (en service, voir ARMOR-DEVOPS) ou tout ordinateur |
 | Sur matériel réel | Tourne comme service sur le banc de test CM5 avec les vraies caméras IP (mouvement seulement) ; rien sur un Jetson |
@@ -57,7 +57,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Domaine | État | Ce que cela veut dire ici |
 |---|---|---|
 | Logiciel | 🟡 | Le détecteur de mouvement et la couche de décision tournent comme service sur le banc d'essai CM5, mais il n'y a pas encore de modèle de détection : il ne distingue pas une personne d'un chat ou d'une branche. |
-| Tests | 🟢 | 137 tests réussissent (`python -m unittest discover -s tests`). |
+| Tests | 🟢 | 141 tests réussissent (`python -m unittest discover -s tests`). |
 | Matériel | 🟡 | Tant que le système est armé, il regarde de minuscules images grises des vraies caméras IP du banc d'essai CM5 ; rien n'a tourné sur un Jetson, avec TensorRT ni sur un flux RTSP décodé. |
 | Intégration | 🟡 | Il rend compte au serveur du banc d'essai du mouvement pondéré par les radars . |
 | Sécurité | 🟡 | Le service n'agit jamais (chaque décision porte `authorizes_action = false`), refuse un jeton de moins de 24 caractères et une adresse de serveur qui n'est ni `https://` ni cette même machine, et ne stocke jamais d'image ; testé, sans revue indépendante. |
@@ -135,7 +135,7 @@ Une valeur hors plage arrête le service avec `<NOM> must be between a and b`. L
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                      # 137 tests
+python -m unittest discover -s tests                                                                      # 141 tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # une décision depuis une ligne
 python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # refuse tant que les réglages ne disent pas enabled ; ensuite le résumé d'un jour
 python -m armor_server_ai.service --once                                                                  # une passe du service d'observation
@@ -146,7 +146,7 @@ Voir la [frontière de l'inférence](docs/INFERENCE_BOUNDARY.md) et le [service]
 ## 🧪 Tests
 
 ```powershell
-python -m unittest discover -s tests  # 137 tests
+python -m unittest discover -s tests  # 141 tests
 python -I tools/armor_ci_validate.py
 ```
 
@@ -201,7 +201,7 @@ ARMOR-SERVER-AI/
 │   ├── daily_ai.py                la note facultative d'un fournisseur, désactivée
 │   ├── daily_config.py            le fichier de réglages, strict
 │   └── redact.py                  noms, adresses et identifiants retirés
-├── tests/                         137 tests : mouvement, politique, service, travailleur, résumé quotidien
+├── tests/                         141 tests : mouvement, politique, service, travailleur, résumé quotidien
 ├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         les vérifications CI et les outils partagés
 ├── images/                        bannière, icône et images du README
