@@ -30,4 +30,6 @@ holds no camera address or password. A failure of the server or of a camera (its
 
 On the bench it is installed by `ARMOR-DEVOPS/scripts/install_cm5.sh --with-ai`.
 
+The unit can also be limited by the kernel to the addresses it needs: with `--ai-ip-restrict on` the installer gives it `IPAddressDeny=any` and `IPAddressAllow=localhost`, and `--ai-ip-allow` adds the addresses or networks of a server that is on another machine. It is off by default and an upgrade keeps what the install had.
+
 The separate daily report of the events of a day (`--daily-summary`, off by default) is described in DAILY_SUMMARY.md; it is not part of the service and opens no route.
