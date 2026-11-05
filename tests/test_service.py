@@ -261,7 +261,7 @@ class WatcherTests(unittest.TestCase):
         watcher.run_once()
         watcher.run_once()
         report = server.told[0]
-        self.assertEqual(set(report) - {"answer"}, {"camera_id", "severity", "reasons", "profile", "motion", "radar_tracks"})
+        self.assertEqual(set(report) - {"answer"}, {"camera_id", "severity", "reasons", "profile", "motion", "regions", "radar_tracks"})
         self.assertRegex(report["camera_id"], r"^[A-Za-z0-9._-]{3,80}$")
         self.assertIn(report["severity"], ("review", "high"))
         self.assertLessEqual(len(report["reasons"]), 5)

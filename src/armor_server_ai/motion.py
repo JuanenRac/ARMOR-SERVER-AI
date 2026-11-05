@@ -11,7 +11,7 @@ Pure functions, so they are tested without a camera.
 
 from __future__ import annotations
 
-from functools import lru_cache
+from . import motion_core as core
 
 FRAME_WIDTH = 64
 FRAME_HEIGHT = 36
@@ -29,7 +29,7 @@ def check_frame(frame: bytes) -> None:
 
 
 #: Fewest pixels that must be left to look at once the ignore zones are taken out (about 3 % of the frame): with less, a handful of pixels would decide.
-MIN_COUNTED_PIXELS = 64
+MIN_COUNTED_PIXELS = core.MIN_COUNTED_PIXELS
 #: Most ignore zones of a camera.
 MAX_ZONES = 16
 
@@ -37,51 +37,23 @@ MAX_ZONES = 16
 def mask_from_zones(zones) -> bytes | None:
     """The mask of a camera's ignore zones: 1 for a pixel that counts, 0 for one inside a zone. Each zone is a rectangle in fractions of the picture, `(x, y, width, height)` or a
     dict with those keys; one that is not a rectangle inside the picture is left out. None when there is nothing to ignore (no zones, or none valid)."""
-    mask = bytearray(b"\x01" * FRAME_BYTES)
-    ignored = False
-    for zone in list(zones or [])[:MAX_ZONES]:
-        try:
-            x, y, w, h = (zone["x"], zone["y"], zone["w"], zone["h"]) if isinstance(zone, dict) else zone
-            x, y, w, h = float(x), float(y), float(w), float(h)
-        except (KeyError, TypeError, ValueError):
-            continue
-        if not (0.0 <= x <= 1.0 and 0.0 <= y <= 1.0 and 0.0 < w <= 1.0 and 0.0 < h <= 1.0):
-            continue
-        left, right = int(x * FRAME_WIDTH), min(FRAME_WIDTH, int((x + w) * FRAME_WIDTH + 0.999))
-        top, bottom = int(y * FRAME_HEIGHT), min(FRAME_HEIGHT, int((y + h) * FRAME_HEIGHT + 0.999))
-        for row in range(top, bottom):
-            for column in range(left, right):
-                mask[row * FRAME_WIDTH + column] = 0
-                ignored = True
-    return bytes(mask) if ignored else None
+    return core.rect_mask(list(zones or [])[:MAX_ZONES], FRAME_WIDTH, FRAME_HEIGHT)
 
 
-@lru_cache(maxsize=64)
-def _kept_indices(mask: bytes) -> tuple[int, ...]:
-    """The indices of the pixels that count under a mask; the same mask comes back every frame of a camera, so it is worked out once."""
-    return tuple(index for index in range(FRAME_BYTES) if mask[index])
+def observe(previous: bytes, current: bytes, threshold: int = PIXEL_THRESHOLD, mask: bytes | None = None) -> core.Motion:
+    """The movement between two frames by the model every observation service shares (motion_core.py): the share of the pixels that changed once the change of the whole picture
+    (the camera's exposure, a cloud, the switch to infrared) is taken away, and the cells where it moved. With a `mask` (see mask_from_zones) the pixels inside an ignore zone are
+    left out of everything - the changes, the median and the count - so a tree that waves in a corner of the picture is never movement."""
+    check_frame(previous)
+    check_frame(current)
+    if mask is not None and len(mask) != FRAME_BYTES:
+        raise ValueError(f"a mask is {FRAME_BYTES} bytes")
+    return core.analyze(previous, current, FRAME_WIDTH, FRAME_HEIGHT, threshold, mask)
 
 
 def changed_ratio(previous: bytes, current: bytes, threshold: int = PIXEL_THRESHOLD, mask: bytes | None = None) -> float:
-    """The share (0 to 1) of the pixels that changed by more than `threshold` between two frames. With a `mask` (see mask_from_zones) the pixels inside an ignore zone are left out of
-    everything - the changes, the median that is taken away and the count the share is of - so a tree that waves in a corner of the picture is never movement."""
-    check_frame(previous)
-    check_frame(current)
-    if mask is not None:
-        if len(mask) != FRAME_BYTES:
-            raise ValueError(f"a mask is {FRAME_BYTES} bytes")
-        kept = _kept_indices(bytes(mask))
-        if len(kept) < MIN_COUNTED_PIXELS:
-            return 0.0
-        differences = [current[index] - previous[index] for index in kept]
-        shift = sorted(differences)[len(differences) // 2]
-        return sum(1 for difference in differences if abs(difference - shift) > threshold) / len(kept)
-    # The whole picture getting brighter or darker (the camera's automatic exposure, a cloud, the switch to infrared) is not something moving: the typical change of all the pixels
-    # (their median, which a moving person barely shifts) is taken away first, so only what changed MORE than the rest counts.
-    differences = [after - before for before, after in zip(previous, current, strict=False)]
-    shift = sorted(differences)[len(differences) // 2]
-    moved = sum(1 for difference in differences if abs(difference - shift) > threshold)
-    return moved / FRAME_BYTES
+    """The share (0 to 1) of the pixels that changed by more than `threshold` between two frames (see `observe`)."""
+    return observe(previous, current, threshold, mask).ratio
 
 
 def motion_confidence(ratio: float) -> float:

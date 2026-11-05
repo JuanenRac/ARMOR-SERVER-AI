@@ -32,7 +32,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Protocol
 
-from .motion import FRAME_BYTES, changed_ratio, estimate_lux, mask_from_zones, motion_confidence
+from .motion import FRAME_BYTES, estimate_lux, mask_from_zones, motion_confidence, observe
+from .motion_core import regions as motion_regions
 from .policy import VisualObservation, decide
 from .profile import ProfileSelector
 
@@ -135,6 +136,8 @@ class Sighting:
     profile: str
     motion: float
     radar_tracks: int
+    #: Where the picture moved, as rectangles {x, y, w, h} in fractions of the picture, the largest first (the schema allows 16); empty when the grid did not place it.
+    regions: tuple = ()
     #: When the camera was last told about, before this sighting: given back if the server never got it, so a hiccup does not silence the camera for a whole cooldown.
     previous_report_s: float | None = None
 
@@ -155,7 +158,8 @@ def look(state: CameraState, camera_id: str, frame: bytes, now_s: float, radar_t
     profile = state.selector.update(lux, now_s)
     if previous is None:
         return None
-    ratio = changed_ratio(previous, frame, mask=ignore)
+    movement = observe(previous, frame, mask=ignore)
+    ratio = movement.ratio
     if ratio > GLOBAL_CHANGE_RATIO:   # the light changed, not what is in front of the camera
         state.streak = 0
         return None
@@ -173,7 +177,7 @@ def look(state: CameraState, camera_id: str, frame: bytes, now_s: float, radar_t
     if state.last_report_s is not None and now_s - state.last_report_s < cooldown_s:
         return None
     before, state.last_report_s = state.last_report_s, now_s
-    return Sighting(camera_id, decision.severity, decision.reasons, profile, round(confidence, 3), radar_tracks, before)
+    return Sighting(camera_id, decision.severity, decision.reasons, profile, round(confidence, 3), radar_tracks, tuple(motion_regions(movement.extents)), before)
 
 
 class Watcher:
@@ -288,6 +292,8 @@ class Watcher:
             return []
         reasons = list(sighting.reasons) + ([] if declared else [NO_NODES_REASON])
         report = {"camera_id": sighting.camera_id, "severity": sighting.severity, "reasons": reasons, "profile": sighting.profile, "motion": sighting.motion, "radar_tracks": sighting.radar_tracks}
+        if sighting.regions:
+            report["regions"] = list(sighting.regions)
         try:
             answer = self._server.observe(report)
         except ServerError as error:
