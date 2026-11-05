@@ -4,9 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.3.2] - The documentation says the unit of the service can be limited to the addresses it needs: docs/SERVICE.md describes the installer option that gives it IPAddressDeny=any and IPAddressAllow=localhost (off by default). (and 2 more changes)
+
 - **The documentation says the unit of the service can be limited to the addresses it needs:** `docs/SERVICE.md` describes the installer option that gives it `IPAddressDeny=any` and `IPAddressAllow=localhost` (off by default).
 - **The movement model is the one of the shared repository, and the observation says where it moved:** `motion_core.py` is a byte-for-byte copy of the one in ARMOR-COMMON (ARMOR-VISION uses the same file); what is told to the server now carries `regions`, the rectangles `{x, y, w, h}` where the picture moved (at most 16, the largest first), and a test fails when the copy differs from the original or the report does not pass the shared schema.
 - **The launchers find the shared repository through `ARMOR_COMMON_DIR`:** `build`, `build-test`, `test` and `run` (`.sh` and `.bat`) use the folder named by that variable when it is set and the sibling `ARMOR-COMMON` folder otherwise, so a checkout with another layout builds without changing a file.
+
 ## [0.3.1] - The policy worker accepts both versions of the vision event, the ignore mask of a camera is made once and the service can report how it is doing in a small status file
 
 - **The policy worker accepts both versions of the vision event:** a line with `schema` `armor.vision.event/v1` takes the radar count the worker was started with, one with `armor.vision.event/v2` must bring its own `radar_tracks`, and any other `schema` is refused on that line only. Four tests pin it. Tests: 141 (before 137).
