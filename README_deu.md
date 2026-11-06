@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 oder neuer">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Sprache">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-141%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-145%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.3.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Reifegrad">
 </p>
 
 ---
 
-**Ehrlichkeitsprüfung - was heute läuft:** Die Entscheidungsschicht und der Bewegungsdetektor sind real und getestet (141 Tests), und der Beobachtungsdienst **läuft am CM5-Testaufbau**: Bei scharfem System sieht er winzige Graubilder der echten IP-Kameras an und meldet Bewegung, gegen die Radare abgewogen. Er kann eine Person nicht von einer Katze oder einem Ast unterscheiden: **Es gibt noch kein Erkennungsmodell**, und nichts lief auf dem Jetson, mit TensorRT oder einem dort dekodierten RTSP-Strom.
+**Ehrlichkeitsprüfung - was heute läuft:** Die Entscheidungsschicht und der Bewegungsdetektor sind real und getestet (145 Tests), und der Beobachtungsdienst **läuft am CM5-Testaufbau**: Bei scharfem System sieht er winzige Graubilder der echten IP-Kameras an und meldet Bewegung, gegen die Radare abgewogen. Er kann eine Person nicht von einer Katze oder einem Ast unterscheiden: **Es gibt noch kein Erkennungsmodell**, und nichts lief auf dem Jetson, mit TensorRT oder einem dort dekodierten RTSP-Strom.
 
 ---
 
@@ -40,7 +40,7 @@
 | Reifegrad | Etabliert |
 | Rolle | Beobachtungsdienst: Bewegung, mit den Radaren gewichtet, nur Empfehlungen |
 | Technik | Python 3.11+, nur Standardbibliothek |
-| Tests | 141 (`python -m unittest discover -s tests`) |
+| Tests | 145 (`python -m unittest discover -s tests`) |
 | Vertrag | Client von ARMOR-SERVER: 3 Routen unter `/api/v1/ai/`; er wird nie aufgerufen |
 | Läuft auf | Der CM5-Prüfstand (als Dienst, siehe ARMOR-DEVOPS) oder jeder Computer |
 | Auf echter Hardware | Läuft als Dienst am CM5-Testaufbau mit den echten IP-Kameras (nur Bewegung); nichts auf einem Jetson |
@@ -57,7 +57,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Bereich | Stand | Was das hier bedeutet |
 |---|---|---|
 | Software | 🟡 | Der Bewegungsmelder und die Entscheidungsschicht laufen als Dienst auf dem CM5-Prüfstand, aber es gibt noch kein Erkennungsmodell: Er unterscheidet keine Person von einer Katze oder einem Ast. |
-| Tests | 🟢 | 141 Tests bestehen (`python -m unittest discover -s tests`). |
+| Tests | 🟢 | 145 Tests bestehen (`python -m unittest discover -s tests`). |
 | Hardware | 🟡 | Solange das System scharf ist, betrachtet er winzige Graubilder der echten IP-Kameras des CM5-Prüfstands; nichts lief auf einem Jetson, mit TensorRT oder auf einem dekodierten RTSP-Strom. |
 | Integration | 🟡 | Er meldet die mit den Radaren gewichtete Bewegung an den Server des Prüfstands. |
 | Sicherheit | 🟡 | Der Dienst handelt nie (jede Entscheidung trägt `authorizes_action = false`), lehnt ein Token unter 24 Zeichen und eine Serveradresse ab, die nicht `https://` oder dieselbe Maschine ist, und speichert nie ein Bild; getestet, ohne unabhängige Prüfung. |
@@ -135,7 +135,7 @@ Ein Wert außerhalb des Bereichs stoppt den Dienst mit `<NAME> must be between a
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                      # 141 Tests
+python -m unittest discover -s tests                                                                      # 145 Tests
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # eine Entscheidung aus einer Zeile
 python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # verweigert, bis die Einstellungen enabled sagen; danach die Übersicht eines Tages
 python -m armor_server_ai.service --once                                                                  # ein Durchgang des Beobachtungsdienstes
@@ -146,7 +146,7 @@ Siehe die [Grenze der Inferenz](docs/INFERENCE_BOUNDARY.md) und den [Dienst](doc
 ## 🧪 Tests
 
 ```powershell
-python -m unittest discover -s tests  # 141 Tests
+python -m unittest discover -s tests  # 145 Tests
 python -I tools/armor_ci_validate.py
 ```
 
@@ -201,7 +201,7 @@ ARMOR-SERVER-AI/
 │   ├── daily_ai.py                die optionale Notiz eines Anbieters, standardmäßig aus
 │   ├── daily_config.py            die Einstellungsdatei, streng geprüft
 │   └── redact.py                  Namen, Adressen und Zugangsdaten entfernt
-├── tests/                         141 Tests: Bewegung, Richtlinie, Dienst, Arbeiter, Tagesübersicht
+├── tests/                         145 Tests: Bewegung, Richtlinie, Dienst, Arbeiter, Tagesübersicht
 ├── docs/                          INFERENCE_BOUNDARY.md, SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         die gemeinsamen CI-Prüfungen und Werkzeuge
 ├── images/                        Banner, Symbol und die Bilder des READMEs
