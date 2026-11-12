@@ -56,5 +56,39 @@ class SharedMotionTests(unittest.TestCase):
         validate_payload("ai_observation", self.told())
 
 
+class LightAndNoiseTests(unittest.TestCase):
+    """A light that comes on changes the whole picture and a person only some neighbouring cells; scattered noise is no region (the check by cells of the area detector)."""
+
+    def test_a_light_switching_on_alone_is_no_cell_and_no_region(self):
+        motion = observe(frame(40), frame(220))
+        self.assertEqual((motion.ratio, motion.cells, motion.extents), (0.0, frozenset(), ()))
+
+    def test_a_person_inside_a_light_change_is_the_only_region(self):
+        from armor_server_ai.motion import FRAME_WIDTH
+        lit = bytearray(frame(190))
+        for y in range(10, 22):
+            for x in range(20, 28):
+                lit[y * FRAME_WIDTH + x] = 255
+        motion = observe(frame(40), bytes(lit))
+        self.assertTrue(motion.cells)
+        self.assertEqual(len(motion.extents), 1)
+        first_column, first_row, last_column, last_row = motion.extents[0]
+        self.assertLessEqual(last_column - first_column, 3)
+        self.assertLessEqual(last_row - first_row, 3)
+
+    def test_scattered_noise_over_the_threshold_makes_no_cell(self):
+        noisy = bytearray(frame(100))
+        for index in range(0, FRAME_BYTES, 40):
+            noisy[index] = 200
+        motion = observe(frame(100), bytes(noisy))
+        self.assertEqual((motion.cells, motion.extents), (frozenset(), ()))
+        self.assertLess(motion.ratio, 0.05)
+
+    def test_two_separate_people_are_two_regions_and_touching_cells_are_one(self):
+        self.assertEqual(len(motion_core.region_extents({(1, 1), (2, 1), (2, 2)})), 1)
+        self.assertEqual(len(motion_core.region_extents({(1, 1), (10, 6)})), 2)
+        self.assertEqual(len(motion_core.region_extents({(1, 1), (2, 2)})), 2)   # a diagonal does not join
+
+
 if __name__ == "__main__":
     unittest.main()

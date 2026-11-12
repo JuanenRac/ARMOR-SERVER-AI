@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **More tests of the movement detector against light and noise:** a light that comes on alone makes no cell and no region, a person inside a light change is the only region, scattered noise over the threshold makes no cell, and neighbouring cells join into one region while a diagonal does not.
 ## [0.3.2] - The documentation says the unit of the service can be limited to the addresses it needs: docs/SERVICE.md describes the installer option that gives it IPAddressDeny=any and IPAddressAllow=localhost (off by default). (and 2 more changes)
 
 - **The documentation says the unit of the service can be limited to the addresses it needs:** `docs/SERVICE.md` describes the installer option that gives it `IPAddressDeny=any` and `IPAddressAllow=localhost` (off by default).
