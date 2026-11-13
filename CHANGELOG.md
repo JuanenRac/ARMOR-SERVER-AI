@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The coverage of the tests is measured and held:** a new workflow runs the tests under coverage (lines and branches) and fails when either figure falls below the floor in `docs/coverage_threshold.json` (97.0 % lines, 94.5 % branches). The reader of the daily events is tried on its refusals (too large, too many events, a line that is not JSON, a message outside the day, a power channel without watts, a file that cannot be read); the total goes from 96 % to 97.5 % of lines.
+
 - **More tests of the movement detector against light and noise:** a light that comes on alone makes no cell and no region, a person inside a light change is the only region, scattered noise over the threshold makes no cell, and neighbouring cells join into one region while a diagonal does not.
 ## [0.3.2] - The documentation says the unit of the service can be limited to the addresses it needs: docs/SERVICE.md describes the installer option that gives it IPAddressDeny=any and IPAddressAllow=localhost (off by default). (and 2 more changes)
 
