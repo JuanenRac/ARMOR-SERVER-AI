@@ -54,6 +54,8 @@ class ServerError(Exception):
 #: What the server may send back, at most: the context (a house's nodes and cameras) and a reply to an observation; a frame is exactly FRAME_BYTES.
 MAX_CONTEXT_BYTES = 1_000_000
 MAX_REPLY_BYTES = 65_536
+#: The most areas to ignore the server takes for one camera.
+MAX_PROPOSED_AREAS = 16
 #: The server lets this service ask for this many pictures a minute altogether.
 FRAMES_PER_MINUTE = 200
 
@@ -114,6 +116,10 @@ class HttpServer:
 
     def observe(self, report: dict) -> dict:
         return json.loads(self._call("POST", "/api/v1/ai/observations", report))
+
+    def propose_ignore(self, camera_id: str, zones: list[dict]) -> dict:
+        """Tells the server the parts of a camera's picture that are always busy, as areas to ignore that an administrator may accept (only kept while the server's setting ai.learn is on)."""
+        return json.loads(self._call("POST", "/api/v1/ai/ignore-proposals", {"camera_id": camera_id, "zones": zones}))
 
 
 #: Why a camera with no `nodes` in the site design has no radar track counted for it (it is also in the reasons of what is told to the server).
@@ -190,12 +196,15 @@ class Watcher:
     """One pass at a time, so a test (or `--once`) can drive it."""
 
     def __init__(self, server: Server, confirm_frames: int = 2, cooldown_s: float = 60.0, clock: Callable[[], float] = time.monotonic, spatial: bool = False,
-                 learner: ZoneLearner | None = None) -> None:
+                 learner: ZoneLearner | None = None, learner_factory: Callable[[], ZoneLearner] | None = None) -> None:
         if confirm_frames < 1:
             raise ValueError("confirm_frames must be at least 1")
         self._server, self._confirm, self._cooldown, self._clock = server, confirm_frames, cooldown_s, clock
         self._learner = learner                  # learns the busy parts of the pictures while the system is disarmed (calibration.py); None unless asked for
         self._learn_previous: dict[str, bytes] = {}
+        self._learner_factory = learner_factory   # makes the learner when the server's setting ai.learn is on (None: only the learner given, if any)
+        self._options_told = False                # whether the server said its options in the context (an older server does not: the environment then decides)
+        self._proposed: dict[str, str] = {}       # per camera: the proposal last told to the server, so it is told again only when it changes
         self._spatial = spatial   # judge where each radar track falls in the picture (see spatial.py); off unless asked for
         self._cameras: dict[str, CameraState] = {}
         self._masks: dict[str, tuple[str, bytes | None]] = {}   # per camera: the zones as they were last seen and the mask made from them
@@ -215,6 +224,42 @@ class Watcher:
             body["learning"] = self._learner.report()   # counters and the proposed areas to ignore; nothing is applied until the person accepts them in the site design
         return body
 
+    def _follow_options(self, context: dict) -> None:
+        """The two options of the server (both off by default) decide, when it tells them: where each radar track falls in the picture, and the study of the pictures. A server that does not tell them leaves the environment in charge."""
+        options = context.get("options")
+        if not isinstance(options, dict):
+            return
+        self._options_told = True
+        self._spatial = options.get("spatial") is True
+        if options.get("learn") is True:
+            if self._learner is None and self._learner_factory is not None:
+                self._learner = self._learner_factory()
+        elif self._learner is not None:
+            self._learner.save()
+            self._learner = None
+            self._learn_previous.clear()
+            self._proposed.clear()
+
+    def _propose(self, learner: ZoneLearner) -> None:
+        """Tells the server the areas to ignore that the study of the pictures found, once per change; the server keeps them for an administrator to accept or reject and applies nothing."""
+        send = getattr(self._server, "propose_ignore", None)
+        if send is None or not self._options_told:
+            return
+        for camera_id, entry in learner.report().items():
+            zones = entry.get("proposal")
+            if not zones:
+                continue
+            zones = zones[:MAX_PROPOSED_AREAS]
+            key = json.dumps(zones, sort_keys=True)
+            if self._proposed.get(camera_id) == key:
+                continue
+            try:
+                answer = send(camera_id, zones)
+            except ServerError:
+                continue   # an older server has no such route, or the camera is gone: it is tried again when the proposal changes
+            if isinstance(answer, dict) and (answer.get("stored") is True or answer.get("reason") in {"unchanged", "rejected_before"}):
+                self._proposed[camera_id] = key
+
     def _learn(self, context: dict) -> None:
         """While the system is disarmed and the learning is on: compare each picture with the one before and count the cells that moved. Nothing is reported to the server and no picture is kept."""
         learner = self._learner
@@ -233,6 +278,7 @@ class Watcher:
                 learner.feed(camera_id, check.cells)
             self._learn_previous[camera_id] = frame
         learner.save()
+        self._propose(learner)
 
     def _mask(self, camera_id: str, zones) -> bytes | None:
         """The ignore mask of a camera, worked out again only when its zones change."""
@@ -264,6 +310,7 @@ class Watcher:
             raise ServerError(0, "bad_context")
         self.passes += 1
         self.armed = context.get("mode") == "armed"
+        self._follow_options(context)
         if context.get("mode") != "armed":
             self._cameras.clear()   # when it is armed again the first frame has nothing old to be compared with
             self.camera_count = 0
@@ -371,6 +418,13 @@ def _learner_from_environment() -> ZoneLearner | None:
     return ZoneLearner(Path(path) if path else None, min_hours=_number("ARMOR_AI_LEARN_HOURS", 12.0, 0.0, 168.0), busy_share=_number("ARMOR_AI_LEARN_BUSY_SHARE", 0.25, 0.01, 1.0))
 
 
+def _learner_factory_from_environment() -> Callable[[], ZoneLearner]:
+    """How the learner is made when the server's setting ai.learn is on: the counters in `ARMOR_AI_LEARN_FILE` when it is set, and the hours and the share from the environment."""
+    path = os.environ.get("ARMOR_AI_LEARN_FILE", "").strip()
+    hours, share = _number("ARMOR_AI_LEARN_HOURS", 12.0, 0.0, 168.0), _number("ARMOR_AI_LEARN_BUSY_SHARE", 0.25, 0.01, 1.0)
+    return lambda: ZoneLearner(Path(path) if path else None, min_hours=hours, busy_share=share)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="A.R.M.O.R. observation service: movement on the cameras, weighed with the radars")
     parser.add_argument("--once", action="store_true", help="one pass, printing what it saw")
@@ -384,7 +438,7 @@ def main(argv: list[str] | None = None) -> None:
     watcher = Watcher(HttpServer(check_server_url(os.environ.get("ARMOR_AI_SERVER_URL", "http://127.0.0.1:18080")), token),
                       confirm_frames=int(_number("ARMOR_AI_CONFIRM_FRAMES", 2, 1, 20)), cooldown_s=_number("ARMOR_AI_COOLDOWN_S", 60.0, 0.0, 3600.0),
                       spatial=os.environ.get("ARMOR_AI_SPATIAL", "").strip().lower() in {"1", "true", "yes"},
-                      learner=_learner_from_environment())
+                      learner=_learner_from_environment(), learner_factory=_learner_factory_from_environment())
     if args.once:
         try:
             print(json.dumps(watcher.run_once(), separators=(",", ":")))
