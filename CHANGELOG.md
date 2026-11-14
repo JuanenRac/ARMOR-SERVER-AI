@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A radar track can be required to fall where the camera saw the movement:** with `ARMOR_AI_SPATIAL=1` (off by default) the tracks of the nodes that cover a camera are placed on the floor plan from their pose, projected on the picture of the camera (pinhole, field of view and range from the design) and counted only when they fall in a region of movement; a track behind the camera, out of range or out of view no longer makes a review or a high alert out of a leaf on the other side. Missing geometry (no pose, only a count of targets) leaves the old rule untouched. Tested with synthetic scenes; the real radar and camera are the pending physical check.
 - **The coverage of the tests is measured and held:** a new workflow runs the tests under coverage (lines and branches) and fails when either figure falls below the floor in `docs/coverage_threshold.json` (97.0 % lines, 94.5 % branches). The reader of the daily events is tried on its refusals (too large, too many events, a line that is not JSON, a message outside the day, a power channel without watts, a file that cannot be read); the total goes from 96 % to 97.5 % of lines.
 
 - **More tests of the movement detector against light and noise:** a light that comes on alone makes no cell and no region, a person inside a light change is the only region, scattered noise over the threshold makes no cell, and neighbouring cells join into one region while a diagonal does not.
