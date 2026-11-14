@@ -32,6 +32,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Protocol
 
+from .calibration import ZoneLearner
 from .motion import FRAME_BYTES, estimate_lux, mask_from_zones, motion_confidence, observe
 from .motion_core import regions as motion_regions
 from .spatial import matching_tracks
@@ -188,10 +189,13 @@ def look(state: CameraState, camera_id: str, frame: bytes, now_s: float, radar_t
 class Watcher:
     """One pass at a time, so a test (or `--once`) can drive it."""
 
-    def __init__(self, server: Server, confirm_frames: int = 2, cooldown_s: float = 60.0, clock: Callable[[], float] = time.monotonic, spatial: bool = False) -> None:
+    def __init__(self, server: Server, confirm_frames: int = 2, cooldown_s: float = 60.0, clock: Callable[[], float] = time.monotonic, spatial: bool = False,
+                 learner: ZoneLearner | None = None) -> None:
         if confirm_frames < 1:
             raise ValueError("confirm_frames must be at least 1")
         self._server, self._confirm, self._cooldown, self._clock = server, confirm_frames, cooldown_s, clock
+        self._learner = learner                  # learns the busy parts of the pictures while the system is disarmed (calibration.py); None unless asked for
+        self._learn_previous: dict[str, bytes] = {}
         self._spatial = spatial   # judge where each radar track falls in the picture (see spatial.py); off unless asked for
         self._cameras: dict[str, CameraState] = {}
         self._masks: dict[str, tuple[str, bytes | None]] = {}   # per camera: the zones as they were last seen and the mask made from them
@@ -205,8 +209,30 @@ class Watcher:
 
     def status(self) -> dict:
         """What the service can say about itself, for an operator or a monitor: no picture, no address, no secret."""
-        return {"passes": self.passes, "armed": self.armed, "cameras": self.camera_count, "observations_sent": self.sent, "observations_failed": self.failed,
+        body = {"passes": self.passes, "armed": self.armed, "cameras": self.camera_count, "observations_sent": self.sent, "observations_failed": self.failed,
                 "cameras_with_problem": {camera_id: problem for camera_id, problem in sorted(self._problems.items()) if problem}}
+        if self._learner is not None:
+            body["learning"] = self._learner.report()   # counters and the proposed areas to ignore; nothing is applied until the person accepts them in the site design
+        return body
+
+    def _learn(self, context: dict) -> None:
+        """While the system is disarmed and the learning is on: compare each picture with the one before and count the cells that moved. Nothing is reported to the server and no picture is kept."""
+        learner = self._learner
+        if learner is None:
+            return
+        raw = context.get("cameras")
+        ids = sorted({camera["id"] for camera in (raw if isinstance(raw, list) else []) if isinstance(camera, dict) and isinstance(camera.get("id"), str)})
+        for camera_id in ids:
+            try:
+                frame = self._server.frame(camera_id)
+                check = observe(self._learn_previous.get(camera_id, frame), frame)
+            except (ServerError, ValueError):
+                self._learn_previous.pop(camera_id, None)
+                continue
+            if camera_id in self._learn_previous:
+                learner.feed(camera_id, check.cells)
+            self._learn_previous[camera_id] = frame
+        learner.save()
 
     def _mask(self, camera_id: str, zones) -> bytes | None:
         """The ignore mask of a camera, worked out again only when its zones change."""
@@ -241,7 +267,10 @@ class Watcher:
         if context.get("mode") != "armed":
             self._cameras.clear()   # when it is armed again the first frame has nothing old to be compared with
             self.camera_count = 0
+            if self._learner is not None:
+                self._learn(context)
             return []
+        self._learn_previous.clear()
         raw_nodes = context.get("nodes")
         online = [node for node in (raw_nodes if isinstance(raw_nodes, list) else []) if isinstance(node, dict) and node.get("online")]
         told: list[dict] = []
@@ -333,6 +362,15 @@ def _number(name: str, default: float, minimum: float, maximum: float) -> float:
     return value
 
 
+def _learner_from_environment() -> ZoneLearner | None:
+    """The learning of the busy parts of the pictures: off unless `ARMOR_AI_LEARN=1` (it looks at the cameras while the system is disarmed, so it is the person's choice); the counters are kept
+    in `ARMOR_AI_LEARN_FILE` when it is set."""
+    if os.environ.get("ARMOR_AI_LEARN", "").strip().lower() not in {"1", "true", "yes"}:
+        return None
+    path = os.environ.get("ARMOR_AI_LEARN_FILE", "").strip()
+    return ZoneLearner(Path(path) if path else None, min_hours=_number("ARMOR_AI_LEARN_HOURS", 12.0, 0.0, 168.0), busy_share=_number("ARMOR_AI_LEARN_BUSY_SHARE", 0.25, 0.01, 1.0))
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="A.R.M.O.R. observation service: movement on the cameras, weighed with the radars")
     parser.add_argument("--once", action="store_true", help="one pass, printing what it saw")
@@ -345,7 +383,8 @@ def main(argv: list[str] | None = None) -> None:
     interval = _number("ARMOR_AI_INTERVAL_S", 3.0, 1.0, 60.0)
     watcher = Watcher(HttpServer(check_server_url(os.environ.get("ARMOR_AI_SERVER_URL", "http://127.0.0.1:18080")), token),
                       confirm_frames=int(_number("ARMOR_AI_CONFIRM_FRAMES", 2, 1, 20)), cooldown_s=_number("ARMOR_AI_COOLDOWN_S", 60.0, 0.0, 3600.0),
-                      spatial=os.environ.get("ARMOR_AI_SPATIAL", "").strip().lower() in {"1", "true", "yes"})
+                      spatial=os.environ.get("ARMOR_AI_SPATIAL", "").strip().lower() in {"1", "true", "yes"},
+                      learner=_learner_from_environment())
     if args.once:
         try:
             print(json.dumps(watcher.run_once(), separators=(",", ":")))
