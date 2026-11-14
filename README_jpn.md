@@ -21,14 +21,14 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Language-Python%203.11%2B-3776ab.svg" alt="Language">
   <img src="https://img.shields.io/badge/Target-Jetson%20Orin%20NX-76b900.svg" alt="Target">
-  <img src="https://img.shields.io/badge/Tests-160%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-191%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.3.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-established-2EA44F.svg" alt="Maturity">
 </p>
 
 ---
 
-**正直さのチェック - 今日動いているもの:** 判断レイヤーと動き検出器は実在し、テストされています（160 件）。観察サービスは **CM5 テストベンチで動作**しており、システムの警戒中に実際の IP カメラの小さなグレーフレームを見て、レーダーと照らし合わせた動きを報告します。人と猫や枝の区別はできません。**検出モデルはまだなく**、Jetson、TensorRT、そこでデコードした RTSP ストリームでは何も動いていません。
+**正直さのチェック - 今日動いているもの:** 判断レイヤーと動き検出器は実在し、テストされています（191 件）。観察サービスは **CM5 テストベンチで動作**しており、システムの警戒中に実際の IP カメラの小さなグレーフレームを見て、レーダーと照らし合わせた動きを報告します。人と猫や枝の区別はできません。**検出モデルはまだなく**、Jetson、TensorRT、そこでデコードした RTSP ストリームでは何も動いていません。
 
 ---
 
@@ -40,7 +40,7 @@
 | 成熟度 | 確立 |
 | 役割 | 観察サービス：レーダーと合わせて動きを評価し、推奨のみ |
 | 技術 | Python 3.11+（標準ライブラリのみ） |
-| テスト | 160 件（`python -m unittest discover -s tests`） |
+| テスト | 191 件（`python -m unittest discover -s tests`） |
 | 契約 | ARMOR-SERVER のクライアント：`/api/v1/ai/` の 3 ルート。呼び出されることはありません |
 | 動作環境 | CM5 テストベンチ（サービスとして。ARMOR-DEVOPS 参照）または任意のコンピューター |
 | 実機での確認 | CM5 テストベンチで実際の IP カメラとともにサービスとして動作（動きのみ）。Jetson 上では何もありません |
@@ -57,7 +57,7 @@
 | 領域 | 状態 | ここでの意味 |
 |---|---|---|
 | ソフトウェア | 🟡 | 動き検出と判断の層は CM5 テストベンチ上でサービスとして動いていますが、検出モデルはまだありません。人と猫や枝の区別はできません。 |
-| テスト | 🟢 | 160 件のテストが通ります（`python -m unittest discover -s tests`）。 |
+| テスト | 🟢 | 191 件のテストが通ります（`python -m unittest discover -s tests`）。 |
 | ハードウェア | 🟡 | 警戒中は、CM5 テストベンチの実際の IP カメラの小さなグレー画像を見ています。Jetson、TensorRT、デコードした RTSP ストリームではまだ何も動かしていません。 |
 | 連携 | 🟡 | レーダーと照合した動きの結果をテストベンチのサーバーに報告します。 |
 | セキュリティ | 🟡 | サービスは決して動作しません（すべての判定が `authorizes_action = false` を持つ）。24 文字未満のトークンと、`https://` でも同一マシンでもないサーバーアドレスを拒否し、画像は保存しません。テスト済みで、第三者レビューはありません。 |
@@ -135,7 +135,7 @@ ARMOR-SERVER-AI は家が警戒中にカメラの動きを見張る部分です�
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m unittest discover -s tests                                                                      # 160 件
+python -m unittest discover -s tests                                                                      # 191 件
 echo '{"label":"person","confidence":0.9,"lux":4,"radar_tracks":1}' | python -m armor_server_ai.cli       # 1 行から判定を得る
 python -m armor_server_ai.cli --daily-summary day.jsonl --summary-config docs/daily_summary.example.json  # 設定で enabled にするまで拒否し、その後は 1 日のサマリー
 python -m armor_server_ai.service --once                                                                  # 観察サービスを 1 巡
@@ -146,7 +146,7 @@ python -m armor_server_ai.service --once                                        
 ## 🧪 テスト
 
 ```powershell
-python -m unittest discover -s tests  # 160 件
+python -m unittest discover -s tests  # 191 件
 python -I tools/armor_ci_validate.py
 ```
 
@@ -201,7 +201,7 @@ ARMOR-SERVER-AI/
 │   ├── daily_ai.py                プロバイダーの任意メモ（既定でオフ）
 │   ├── daily_config.py            設定ファイル（厳密）
 │   └── redact.py                  名前・アドレス・認証情報の除去
-├── tests/                         160 件：動き、ポリシー、サービス、ワーカー、日次サマリー
+├── tests/                         191 件：動き、ポリシー、サービス、ワーカー、日次サマリー
 ├── docs/                          INFERENCE_BOUNDARY.md、SERVICE.md, DAILY_SUMMARY.md
 ├── tools/                         共通の CI 検査とツール
 ├── images/                        バナー、アイコン、README の画像
