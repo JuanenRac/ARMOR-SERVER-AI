@@ -33,3 +33,11 @@ On the bench it is installed by `ARMOR-DEVOPS/scripts/install_cm5.sh --with-ai`.
 The unit can also be limited by the kernel to the addresses it needs: with `--ai-ip-restrict on` the installer gives it `IPAddressDeny=any` and `IPAddressAllow=localhost`, and `--ai-ip-allow` adds the addresses or networks of a server that is on another machine. It is off by default and an upgrade keeps what the install had.
 
 The separate daily report of the events of a day (`--daily-summary`, off by default) is described in DAILY_SUMMARY.md; it is not part of the service and opens no route.
+
+## Where the radar track is in the picture (off by default)
+
+With `ARMOR_AI_SPATIAL=1` a radar track counts as evidence for a movement on a camera only when it falls, seen from the camera, on the same side of the picture as a region of movement. Without it (the default) any track of the nodes that cover the camera counts, as always.
+
+The geometry comes from the site design, which sends it with the context: a `pose` (`x_mm`, `y_mm`, `yaw_deg`, a position on the floor plan in millimetres and the direction the device faces in degrees clockwise from the +y axis) on each node and on each camera, the tracks of a node as `targets: [{x_mm, y_mm}]` (x to the right of the radar, y straight ahead of it), and on a camera optionally `fov_deg` (default 90) and `range_mm` (default 15000). A track is placed on the plan, projected on the picture as a pinhole camera would, and counts when its column is inside a region of movement with a margin of 12 % of the width. A track behind the camera, beyond its range or outside its view does not count.
+
+It is a flat approximation, enough to tell the left of the picture from the right and to rule out what the camera cannot see. Geometry that is missing never takes evidence away: without the pose of the camera, without a region of movement, or for a node that has no pose or gives only a count, the tracks count as before. The adjustment of the fine position (the lens, the height) needs a real camera and radar, and is the pending physical check.

@@ -34,6 +34,7 @@ from typing import Callable, Protocol
 
 from .motion import FRAME_BYTES, estimate_lux, mask_from_zones, motion_confidence, observe
 from .motion_core import regions as motion_regions
+from .spatial import matching_tracks
 from .policy import VisualObservation, decide
 from .profile import ProfileSelector
 
@@ -151,7 +152,8 @@ def _count(value: object) -> int:
     return len(value) if isinstance(value, list) else 0
 
 
-def look(state: CameraState, camera_id: str, frame: bytes, now_s: float, radar_tracks: int, node_lux: float | None, confirm_frames: int, cooldown_s: float, ignore: bytes | None = None) -> Sighting | None:
+def look(state: CameraState, camera_id: str, frame: bytes, now_s: float, radar_tracks: int, node_lux: float | None, confirm_frames: int, cooldown_s: float, ignore: bytes | None = None,
+         radar_match: Callable[[list], int] | None = None) -> Sighting | None:
     """Weigh one frame of a camera against the one before; a Sighting when a movement is worth telling the server, else None."""
     previous, state.previous = state.previous, frame
     lux = node_lux if node_lux is not None else estimate_lux(frame)
@@ -167,6 +169,9 @@ def look(state: CameraState, camera_id: str, frame: bytes, now_s: float, radar_t
         state.streak = 0
         return None
     confidence = motion_confidence(ratio)
+    regions = motion_regions(movement.extents)
+    if radar_match is not None:   # the spatial correlation (off by default): only the tracks that fall where the camera saw the movement count
+        radar_tracks = radar_match(regions)
     decision = decide(VisualObservation(label="motion", confidence=confidence, lux=lux, profile=profile, camera_id=camera_id), radar_tracks)
     if decision.severity == "ignore":
         state.streak = 0
@@ -177,16 +182,17 @@ def look(state: CameraState, camera_id: str, frame: bytes, now_s: float, radar_t
     if state.last_report_s is not None and now_s - state.last_report_s < cooldown_s:
         return None
     before, state.last_report_s = state.last_report_s, now_s
-    return Sighting(camera_id, decision.severity, decision.reasons, profile, round(confidence, 3), radar_tracks, tuple(motion_regions(movement.extents)), before)
+    return Sighting(camera_id, decision.severity, decision.reasons, profile, round(confidence, 3), radar_tracks, tuple(regions), before)
 
 
 class Watcher:
     """One pass at a time, so a test (or `--once`) can drive it."""
 
-    def __init__(self, server: Server, confirm_frames: int = 2, cooldown_s: float = 60.0, clock: Callable[[], float] = time.monotonic) -> None:
+    def __init__(self, server: Server, confirm_frames: int = 2, cooldown_s: float = 60.0, clock: Callable[[], float] = time.monotonic, spatial: bool = False) -> None:
         if confirm_frames < 1:
             raise ValueError("confirm_frames must be at least 1")
         self._server, self._confirm, self._cooldown, self._clock = server, confirm_frames, cooldown_s, clock
+        self._spatial = spatial   # judge where each radar track falls in the picture (see spatial.py); off unless asked for
         self._cameras: dict[str, CameraState] = {}
         self._masks: dict[str, tuple[str, bytes | None]] = {}   # per camera: the zones as they were last seen and the mask made from them
         self._problems: dict[str, str] = {}   # what was last said about each camera, so it is said again only when it changes
@@ -287,7 +293,8 @@ class Watcher:
         # the zones of the picture that the person said to ignore (a tree, a road, a screen): the server sends them with the camera
         ignore = self._mask(camera_id, camera.get("ignore"))
         state = self._cameras.setdefault(camera_id, CameraState())
-        sighting = look(state, camera_id, frame, self._clock(), tracks, node_lux, self._confirm, self._cooldown, ignore)
+        match = (lambda regions: matching_tracks(camera, nodes, regions, tracks)) if self._spatial else None
+        sighting = look(state, camera_id, frame, self._clock(), tracks, node_lux, self._confirm, self._cooldown, ignore, match)
         if sighting is None:
             return []
         reasons = list(sighting.reasons) + ([] if declared else [NO_NODES_REASON])
@@ -337,7 +344,8 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit("ARMOR_AI_TOKEN (at least 24 characters) is needed")
     interval = _number("ARMOR_AI_INTERVAL_S", 3.0, 1.0, 60.0)
     watcher = Watcher(HttpServer(check_server_url(os.environ.get("ARMOR_AI_SERVER_URL", "http://127.0.0.1:18080")), token),
-                      confirm_frames=int(_number("ARMOR_AI_CONFIRM_FRAMES", 2, 1, 20)), cooldown_s=_number("ARMOR_AI_COOLDOWN_S", 60.0, 0.0, 3600.0))
+                      confirm_frames=int(_number("ARMOR_AI_CONFIRM_FRAMES", 2, 1, 20)), cooldown_s=_number("ARMOR_AI_COOLDOWN_S", 60.0, 0.0, 3600.0),
+                      spatial=os.environ.get("ARMOR_AI_SPATIAL", "").strip().lower() in {"1", "true", "yes"})
     if args.once:
         try:
             print(json.dumps(watcher.run_once(), separators=(",", ":")))
