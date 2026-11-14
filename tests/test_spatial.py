@@ -64,6 +64,14 @@ class Matching(unittest.TestCase):
         self.assertEqual(matching_tracks(CAMERA, [right_track], [LEFT], 1), 0)
         self.assertEqual(matching_tracks(CAMERA, [left_track, right_track], [RIGHT], 2), 1)
 
+    def test_the_placed_tracks_the_server_sends_as_track_points_are_judged_and_the_count_is_kept(self):
+        left_track = {**HERE, "targets": 1, "track_points": [{"x_mm": -2000, "y_mm": 4000}]}
+        right_track = {**HERE, "targets": 1, "track_points": [{"x_mm": 2000, "y_mm": 4000}]}
+        self.assertEqual(matching_tracks(CAMERA, [left_track], [LEFT], 1), 1)
+        self.assertEqual(matching_tracks(CAMERA, [right_track], [LEFT], 1), 0)
+        counted_only = {**HERE, "targets": 2}   # a node that sends no points: its tracks keep counting
+        self.assertEqual(matching_tracks(CAMERA, [counted_only, right_track], [LEFT], 3), 2)
+
     def test_a_track_outside_the_picture_does_not_count(self):
         behind = {**HERE, "targets": [{"x_mm": 0, "y_mm": -3000}]}
         self.assertEqual(matching_tracks(CAMERA, [behind], [LEFT, RIGHT], 1), 0)
