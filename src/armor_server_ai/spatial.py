@@ -6,7 +6,8 @@ Without it a radar track anywhere in the area a camera is said to cover counts a
 counts only when it falls, seen from the camera, on the same side of the picture as a region of movement. The geometry is the one of the site design: a pose is a position on the
 floor plan in millimetres and the direction the device faces, in degrees clockwise from the +y axis of the plan.
 
-    node entry:    {"pose": {"x_mm": 0, "y_mm": 0, "yaw_deg": 90}, "targets": [{"x_mm": 500, "y_mm": 3000}, ...]}     (x to the right of the radar, y straight ahead of it)
+    node entry:    {"pose": {"x_mm": 0, "y_mm": 0, "yaw_deg": 90}, "targets": 2, "track_points": [{"x_mm": 500, "y_mm": 3000}, ...]}   (a list in `targets` is read as well)
+                       (x to the right of the radar, y straight ahead of it)
     camera entry:  {"pose": {"x_mm": 2000, "y_mm": 0, "yaw_deg": 0}, "fov_deg": 90, "range_mm": 15000}
 
 It is a flat approximation (a pinhole camera looking along the plan, no lens distortion, no height): good enough to say "on the left of the picture" and "not in the picture at all",
@@ -102,7 +103,7 @@ def matching_tracks(camera: dict, nodes: Sequence[dict], regions: Sequence[dict]
         return count_of_all
     total = 0
     for node in nodes:
-        placed = _tracks(node.get("targets"))
+        placed = _tracks(node["track_points"] if "track_points" in node else node.get("targets"))   # the server sends the placed tracks as `track_points` and the count as `targets`
         node_pose = parse_pose(node.get("pose"))
         if node_pose is None or placed is None:
             total += _unplaced(node.get("targets"))
