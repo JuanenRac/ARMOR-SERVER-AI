@@ -86,6 +86,16 @@ class Server(Protocol):
     def observe(self, report: dict) -> dict: ...
 
 
+class _NoRedirects(urllib.request.HTTPRedirectHandler):
+    """The token travels in the request: an answer that sends it somewhere else is refused instead of followed."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: ANN001 - the signature of the standard library
+        raise ServerError(0, "redirected")
+
+
+_OPENER = urllib.request.build_opener(_NoRedirects())
+
+
 class HttpServer:
     """The three things the service may ask of ARMOR-SERVER, with its own token."""
 
@@ -96,7 +106,7 @@ class HttpServer:
         data = None if body is None else json.dumps(body).encode("utf-8")
         request = urllib.request.Request(self._base + path, data=data, method=method, headers={"Authorization": f"Bearer {self._token}", "Accept": "application/json", **({"Content-Type": "application/json"} if data else {})})
         try:
-            with urllib.request.urlopen(request, timeout=self._timeout) as reply:   # noqa: S310 - the scheme is checked by check_server_url
+            with _OPENER.open(request, timeout=self._timeout) as reply:   # noqa: S310 - the scheme is checked by check_server_url
                 return reply.read(limit + 1)[:limit + 1]
         except urllib.error.HTTPError as error:
             detail = ""

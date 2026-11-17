@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The calls to the server no longer follow a redirect:** the token travels in every request, so an answer that sends the service to another address ends the call with the error `redirected` instead of passing the token on. The server does not redirect these routes, so nothing changes for a normal installation. A test with a local server that answers 302 and a second one that must not be called.
+
 ## [0.3.3] - Options and areas decided by the server, spatial track check, held test coverage and detector tests
 
 - **The server decides the two options and the service tells it what it found:** when the context carries `options` (the settings `ai.spatial` and `ai.learn` of the server, both off by default), they decide where the radar tracks are placed in the picture and whether the pictures are studied, instead of `ARMOR_AI_SPATIAL` and `ARMOR_AI_LEARN` (a server that does not say its options leaves the environment in charge). The areas found are told to the server with `POST /api/v1/ai/ignore-proposals`, once per change, so that an administrator can accept or reject them in Studio; nothing is applied by the service.

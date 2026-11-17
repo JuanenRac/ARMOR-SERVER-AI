@@ -82,6 +82,34 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(json.loads(sent["body"]), {"camera_id": "cam", "severity": "review"})
         self.assertEqual(sent["type"], "application/json")
 
+    def test_a_redirect_is_not_followed_and_the_token_is_not_sent_on(self):
+        other = ThreadingHTTPServer(("127.0.0.1", 0), StandIn)
+        threading.Thread(target=other.serve_forever, daemon=True).start()
+        try:
+            class Redirecting(BaseHTTPRequestHandler):
+                def log_message(self, *args):
+                    pass
+
+                def do_GET(self):
+                    self.send_response(302)
+                    self.send_header("Location", f"http://127.0.0.1:{other.server_address[1]}/steal")
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+
+            origin = ThreadingHTTPServer(("127.0.0.1", 0), Redirecting)
+            threading.Thread(target=origin.serve_forever, daemon=True).start()
+            try:
+                with self.assertRaises(ServerError) as caught:
+                    HttpServer(f"http://127.0.0.1:{origin.server_address[1]}", TOKEN, timeout_s=3).context()
+                self.assertEqual((caught.exception.status, caught.exception.code), (0, "redirected"))
+                self.assertEqual(StandIn.seen, [])                      # the other server was never called
+            finally:
+                origin.shutdown()
+                origin.server_close()
+        finally:
+            other.shutdown()
+            other.server_close()
+
     def test_the_error_the_server_gives_is_kept(self):
         StandIn.routes[("GET", "/api/v1/ai/context")] = (401, b'{"error":"unauthorized"}')
         with self.assertRaises(ServerError) as caught:
