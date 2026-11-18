@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The repository structure picture lists the movement model, the learning of areas to ignore and the radar geometry:** `motion_core.py`, `calibration.py` and `spatial.py` now appear in the picture, in the eight languages, and the picture no longer states a number of tests that goes stale.
 - **The shared tools of the manifest and the status lights gain an opt-in strict check of the evidence:** `sync_manifests.py` and `status_lights.py` take `--strict-evidence` (off by default; `ARMOR_STRICT_EVIDENCE=1` switches it on for `armor_ci_validate.py`).
 - **The manifest says simulator evidence until the record of a test on real hardware is kept:** it said bench with no record, so the Hardware and Integration lights go down to orange in the eight READMEs (a person raises them again with the record).
 - **The calls to the server no longer follow a redirect:** the token travels in every request, so an answer that sends the service to another address ends the call with the error `redirected` instead of passing the token on. The server does not redirect these routes, so nothing changes for a normal installation. A test with a local server that answers 302 and a second one that must not be called.
