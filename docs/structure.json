@@ -45,6 +45,45 @@
      }
     },
     {
+     "name": "motion_core.py",
+     "desc": {
+      "en": "the shared movement model: pixels, grid, regions",
+      "es": "el modelo de movimiento compartido: píxeles, rejilla, regiones",
+      "de": "das gemeinsame Bewegungsmodell: Pixel, Raster, Regionen",
+      "fr": "le modèle de mouvement partagé : pixels, grille, régions",
+      "it": "il modello di movimento condiviso: pixel, griglia, regioni",
+      "ja": "共通の動き検出モデル：画素、グリッド、領域",
+      "zh": "共享的运动模型：像素、网格、区域",
+      "pt": "o modelo de movimento partilhado: píxeis, grelha, regiões"
+     }
+    },
+    {
+     "name": "calibration.py",
+     "desc": {
+      "en": "learns the always-busy cells and proposes areas to ignore, off by default",
+      "es": "aprende las celdas siempre ocupadas y propone zonas a ignorar, desactivado por defecto",
+      "de": "lernt die stets belegten Zellen und schlägt Ignorierzonen vor, standardmäßig aus",
+      "fr": "apprend les cellules toujours occupées et propose des zones à ignorer, désactivé par défaut",
+      "it": "impara le celle sempre occupate e propone aree da ignorare, disattivato di default",
+      "ja": "常に動きのあるセルを学習し無視領域を提案（既定はオフ）",
+      "zh": "学习始终繁忙的单元格并建议忽略区域，默认关闭",
+      "pt": "aprende as células sempre ocupadas e propõe zonas a ignorar, desativado por omissão"
+     }
+    },
+    {
+     "name": "spatial.py",
+     "desc": {
+      "en": "where a radar track falls in a camera picture, off by default",
+      "es": "dónde cae una traza del radar en la imagen de una cámara, desactivado por defecto",
+      "de": "wo eine Radarspur im Kamerabild liegt, standardmäßig aus",
+      "fr": "où tombe une piste radar dans l'image d'une caméra, désactivé par défaut",
+      "it": "dove cade una traccia radar nell'immagine di una telecamera, disattivato di default",
+      "ja": "レーダー軌跡がカメラ映像のどこに入るか（既定はオフ）",
+      "zh": "雷达轨迹落在摄像头画面的位置，默认关闭",
+      "pt": "onde cai uma pista do radar na imagem de uma câmara, desativado por omissão"
+     }
+    },
+    {
      "name": "profile.py",
      "desc": {
       "en": "day or low light, with hysteresis",
@@ -219,14 +258,14 @@
     {
      "name": "tests/",
      "desc": {
-      "en": "130 tests: motion, policy, service, worker, daily summary",
-      "es": "130 pruebas: movimiento, política, servicio, trabajador, resumen diario",
-      "de": "130 Tests: Bewegung, Richtlinie, Dienst, Arbeiter, Tagesübersicht",
-      "fr": "130 tests : mouvement, politique, service, travailleur, résumé quotidien",
-      "it": "130 test: movimento, politica, servizio, worker, riepilogo giornaliero",
-      "ja": "130 件：動き、ポリシー、サービス、ワーカー、日次サマリー",
-      "zh": "130 项：运动、策略、服务、工作进程、每日摘要",
-      "pt": "130 testes: movimento, política, serviço, trabalhador, resumo diário"
+      "en": "motion, policy, service, worker, daily summary",
+      "es": "movimiento, política, servicio, trabajador, resumen diario",
+      "de": "Bewegung, Richtlinie, Dienst, Arbeiter, Tagesübersicht",
+      "fr": "mouvement, politique, service, travailleur, résumé quotidien",
+      "it": "movimento, politica, servizio, worker, riepilogo giornaliero",
+      "ja": "動き、ポリシー、サービス、ワーカー、日次サマリー",
+      "zh": "运动、策略、服务、工作进程、每日摘要",
+      "pt": "movimento, política, serviço, trabalhador, resumo diário"
      }
     },
     {
