@@ -190,6 +190,9 @@ ARMOR-SERVER-AI/
 ├── src/armor_server_ai/
 │   ├── service.py                 観察サービス：間隔ごとに 1 巡
 │   ├── motion.py                  グレーフレーム、無視ゾーン、動き
+│   ├── motion_core.py             共通の動き検出モデル：画素、グリッド、領域
+│   ├── calibration.py             常に動きのあるセルを学習し無視領域を提案（既定はオフ）
+│   ├── spatial.py                 レーダー軌跡がカメラ映像のどこに入るか（既定はオフ）
 │   ├── profile.py                 昼間か低照度（ヒステリシス付き）
 │   ├── policy.py                  融合：ignore、review、high
 │   ├── engine_registry.py         SHA-256 で検証する TensorRT エンジン

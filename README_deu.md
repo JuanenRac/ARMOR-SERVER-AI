@@ -190,6 +190,9 @@ ARMOR-SERVER-AI/
 ├── src/armor_server_ai/
 │   ├── service.py                 der Beobachtungsdienst: ein Durchgang je Intervall
 │   ├── motion.py                  Graubild, Ignorierzonen, Bewegungsanteil
+│   ├── motion_core.py             das gemeinsame Bewegungsmodell: Pixel, Raster, Regionen
+│   ├── calibration.py             lernt die stets belegten Zellen und schlägt Ignorierzonen vor, standardmäßig aus
+│   ├── spatial.py                 wo eine Radarspur im Kamerabild liegt, standardmäßig aus
 │   ├── profile.py                 Tag oder wenig Licht, mit Hysterese
 │   ├── policy.py                  Fusion: ignore, review, high
 │   ├── engine_registry.py         TensorRT-Engines per SHA-256 geprüft

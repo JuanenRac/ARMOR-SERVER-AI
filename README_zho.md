@@ -190,6 +190,9 @@ ARMOR-SERVER-AI/
 ├── src/armor_server_ai/
 │   ├── service.py                 观察服务：每个间隔一轮
 │   ├── motion.py                  灰度帧、忽略区、运动量
+│   ├── motion_core.py             共享的运动模型：像素、网格、区域
+│   ├── calibration.py             学习始终繁忙的单元格并建议忽略区域，默认关闭
+│   ├── spatial.py                 雷达轨迹落在摄像头画面的位置，默认关闭
 │   ├── profile.py                 白天或弱光，带迟滞
 │   ├── policy.py                  融合：ignore、review、high
 │   ├── engine_registry.py         以 SHA-256 校验的 TensorRT 引擎
