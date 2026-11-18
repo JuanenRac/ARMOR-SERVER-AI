@@ -179,7 +179,7 @@ GitHub Actions esegue la base A.R.M.O.R. a ogni push e pull request: la validazi
 ## 📂 Struttura del repository
 
 <p align="center">
-  <img src="images/repository-structure.svg" alt="Repository structure of ARMOR-SERVER-AI" width="100%">
+  <img src="images/repository-structure.svg" alt="Struttura del repository di ARMOR-SERVER-AI" width="100%">
 </p>
 
 <details>

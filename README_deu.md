@@ -179,7 +179,7 @@ Es ist reines Python: Es gibt nichts zu kompilieren. Die Version steht in `pypro
 ## 📂 Struktur des Repositorys
 
 <p align="center">
-  <img src="images/repository-structure.svg" alt="Repository structure of ARMOR-SERVER-AI" width="100%">
+  <img src="images/repository-structure.svg" alt="Repository-Struktur von ARMOR-SERVER-AI" width="100%">
 </p>
 
 <details>
