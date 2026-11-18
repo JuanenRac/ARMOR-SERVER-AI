@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The README trees list the movement model, the learning of areas to ignore and the radar geometry:** `motion_core.py`, `calibration.py` and `spatial.py` appear in the text tree of the eight READMEs, and the shared picture tool rounds its coordinates to two decimals.
 - **The repository structure picture lists the movement model, the learning of areas to ignore and the radar geometry:** `motion_core.py`, `calibration.py` and `spatial.py` now appear in the picture, in the eight languages, and the picture no longer states a number of tests that goes stale.
 - **The shared tools of the manifest and the status lights gain an opt-in strict check of the evidence:** `sync_manifests.py` and `status_lights.py` take `--strict-evidence` (off by default; `ARMOR_STRICT_EVIDENCE=1` switches it on for `armor_ci_validate.py`).
 - **The manifest says simulator evidence until the record of a test on real hardware is kept:** it said bench with no record, so the Hardware and Integration lights go down to orange in the eight READMEs (a person raises them again with the record).

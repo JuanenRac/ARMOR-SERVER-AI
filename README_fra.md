@@ -190,6 +190,9 @@ ARMOR-SERVER-AI/
 ├── src/armor_server_ai/
 │   ├── service.py                 le service d'observation : une passe par intervalle
 │   ├── motion.py                  image grise, zones à ignorer, mouvement
+│   ├── motion_core.py             le modèle de mouvement partagé : pixels, grille, régions
+│   ├── calibration.py             apprend les cellules toujours occupées et propose des zones à ignorer, désactivé par défaut
+│   ├── spatial.py                 où tombe une piste radar dans l'image d'une caméra, désactivé par défaut
 │   ├── profile.py                 jour ou faible lumière, avec hystérésis
 │   ├── policy.py                  fusion : ignore, review, high
 │   ├── engine_registry.py         moteurs TensorRT vérifiés par SHA-256
