@@ -58,8 +58,8 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 |---|---|---|
 | Software | 🟡 | El detector de movimiento y la capa de decisión funcionan como servicio en el banco de pruebas CM5, pero aún no hay modelo de detección: no distingue una persona de un gato o una rama. |
 | Pruebas | 🟢 | Pasan 192 pruebas (`python -m unittest discover -s tests`). |
-| Hardware | 🟡 | Mientras el sistema está armado mira fotogramas grises diminutos de las cámaras IP reales del banco de pruebas CM5; nada ha funcionado en una Jetson, con TensorRT ni sobre un flujo RTSP decodificado. |
-| Integración | 🟡 | Informa del movimiento ponderado con los radares al servidor del banco de pruebas. |
+| Hardware | 🟠 | Mientras el sistema está armado mira fotogramas grises diminutos de las cámaras IP reales del banco de pruebas CM5; nada ha funcionado en una Jetson, con TensorRT ni sobre un flujo RTSP decodificado. |
+| Integración | 🟠 | Informa del movimiento ponderado con los radares al servidor del banco de pruebas. |
 | Seguridad | 🟡 | El servicio nunca actúa (toda decisión lleva `authorizes_action = false`), rechaza un token de menos de 24 caracteres y una dirección de servidor que no sea `https://` ni esta misma máquina, y nunca guarda una imagen; probado, sin revisión independiente. |
 | Documentación | 🟢 | Ocho idiomas y el historial de cambios están al día. |
 
