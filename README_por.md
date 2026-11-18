@@ -58,8 +58,8 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 |---|---|---|
 | Software | 🟡 | O detetor de movimento e a camada de decisão funcionam como serviço na bancada de testes CM5, mas ainda não há modelo de deteção: não distingue uma pessoa de um gato ou de um ramo. |
 | Testes | 🟢 | Passam 192 testes (`python -m unittest discover -s tests`). |
-| Hardware | 🟡 | Enquanto o sistema está armado, olha para pequenas imagens cinzentas das câmaras IP reais da bancada de testes CM5; nada funcionou num Jetson, com TensorRT ou sobre um fluxo RTSP descodificado. |
-| Integração | 🟡 | Reporta ao servidor da bancada de testes o movimento ponderado com os radares. |
+| Hardware | 🟠 | Enquanto o sistema está armado, olha para pequenas imagens cinzentas das câmaras IP reais da bancada de testes CM5; nada funcionou num Jetson, com TensorRT ou sobre um fluxo RTSP descodificado. |
+| Integração | 🟠 | Reporta ao servidor da bancada de testes o movimento ponderado com os radares. |
 | Segurança | 🟡 | O serviço nunca age (cada decisão leva `authorizes_action = false`), recusa um token com menos de 24 caracteres e um endereço de servidor que não seja `https://` nem esta mesma máquina, e nunca guarda uma imagem; testado, sem revisão independente. |
 | Documentação | 🟢 | Oito idiomas e o registo de alterações estão atualizados. |
 

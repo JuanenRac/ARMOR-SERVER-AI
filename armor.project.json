@@ -13,7 +13,7 @@
   ],
   "deployment_target": "CM5 test bench (systemd); NVIDIA Jetson Orin NX planned",
   "maturity": "established",
-  "evidence": "bench",
+  "evidence": "simulator",
   "family": "Core Services",
   "parent": "ARMOR-SERVER",
   "native_version": "0.3.3",
