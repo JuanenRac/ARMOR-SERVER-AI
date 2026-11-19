@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The Security and Updates lights of the Project status table follow the evidence ceiling:** they cannot be above what the Hardware row may show for the evidence of the manifest, and Security is never green; the rows that were higher are now orange in the eight READMEs, and `tools/status_lights.py` is the new shared copy.
+
 - **The file tree of the README is drawn from the structure source:** the text tree in the eight READMEs is generated from `docs/structure.json`, the file that also draws the picture, so the two cannot disagree; the tests folder now states its count of 192 tests.
 - **The README trees list the movement model, the learning of areas to ignore and the radar geometry:** `motion_core.py`, `calibration.py` and `spatial.py` appear in the text tree of the eight READMEs, and the shared picture tool rounds its coordinates to two decimals.
 - **The repository structure picture lists the movement model, the learning of areas to ignore and the radar geometry:** `motion_core.py`, `calibration.py` and `spatial.py` now appear in the picture, in the eight languages, and the picture no longer states a number of tests that goes stale.

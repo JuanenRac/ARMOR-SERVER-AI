@@ -60,7 +60,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Tests | 🟢 | 192 tests réussissent (`python -m unittest discover -s tests`). |
 | Matériel | 🟠 | Tant que le système est armé, il regarde de minuscules images grises des vraies caméras IP du banc d'essai CM5 ; rien n'a tourné sur un Jetson, avec TensorRT ni sur un flux RTSP décodé. |
 | Intégration | 🟠 | Il rend compte au serveur du banc d'essai du mouvement pondéré par les radars . |
-| Sécurité | 🟡 | Le service n'agit jamais (chaque décision porte `authorizes_action = false`), refuse un jeton de moins de 24 caractères et une adresse de serveur qui n'est ni `https://` ni cette même machine, et ne stocke jamais d'image ; testé, sans revue indépendante. |
+| Sécurité | 🟠 | Le service n'agit jamais (chaque décision porte `authorizes_action = false`), refuse un jeton de moins de 24 caractères et une adresse de serveur qui n'est ni `https://` ni cette même machine, et ne stocke jamais d'image ; testé, sans revue indépendante. |
 | Documentation | 🟢 | Huit langues et le journal des modifications sont à jour. |
 
 ## 🎯 Présentation

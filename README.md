@@ -60,7 +60,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Tests | 🟢 | 192 tests pass (`python -m unittest discover -s tests`). |
 | Hardware | 🟠 | While the system is armed it looks at tiny grey frames of the real IP cameras of the CM5 test bench; nothing has run on a Jetson, with TensorRT or on a decoded RTSP stream. |
 | Integration | 🟠 | It reports movement weighed with the radars to the server of the CM5 test bench. |
-| Security | 🟡 | The service never acts (every decision carries `authorizes_action = false`), refuses a token under 24 characters and a server address that is not `https://` or this same machine, and never stores a picture; tested, with no independent review. |
+| Security | 🟠 | The service never acts (every decision carries `authorizes_action = false`), refuses a token under 24 characters and a server address that is not `https://` or this same machine, and never stores a picture; tested, with no independent review. |
 | Documentation | 🟢 | Eight languages and the changelog are up to date. |
 
 ## 🎯 Overview
