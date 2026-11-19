@@ -60,7 +60,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Tests | 🟢 | 192 Tests bestehen (`python -m unittest discover -s tests`). |
 | Hardware | 🟠 | Solange das System scharf ist, betrachtet er winzige Graubilder der echten IP-Kameras des CM5-Prüfstands; nichts lief auf einem Jetson, mit TensorRT oder auf einem dekodierten RTSP-Strom. |
 | Integration | 🟠 | Er meldet die mit den Radaren gewichtete Bewegung an den Server des Prüfstands. |
-| Sicherheit | 🟡 | Der Dienst handelt nie (jede Entscheidung trägt `authorizes_action = false`), lehnt ein Token unter 24 Zeichen und eine Serveradresse ab, die nicht `https://` oder dieselbe Maschine ist, und speichert nie ein Bild; getestet, ohne unabhängige Prüfung. |
+| Sicherheit | 🟠 | Der Dienst handelt nie (jede Entscheidung trägt `authorizes_action = false`), lehnt ein Token unter 24 Zeichen und eine Serveradresse ab, die nicht `https://` oder dieselbe Maschine ist, und speichert nie ein Bild; getestet, ohne unabhängige Prüfung. |
 | Dokumentation | 🟢 | Acht Sprachen und das Änderungsprotokoll sind aktuell. |
 
 ## 🎯 Überblick

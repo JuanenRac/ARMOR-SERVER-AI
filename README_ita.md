@@ -60,7 +60,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Test | 🟢 | Superano 192 test (`python -m unittest discover -s tests`). |
 | Hardware | 🟠 | Mentre il sistema è inserito guarda minuscoli fotogrammi grigi delle telecamere IP reali del banco di prova CM5; nulla ha girato su una Jetson, con TensorRT o su un flusso RTSP decodificato. |
 | Integrazione | 🟠 | Riferisce al server del banco di prova il movimento ponderato con i radar. |
-| Sicurezza | 🟡 | Il servizio non agisce mai (ogni decisione porta `authorizes_action = false`), rifiuta un token sotto i 24 caratteri e un indirizzo di server che non sia `https://` o questa stessa macchina, e non salva mai un'immagine; provato, senza revisione indipendente. |
+| Sicurezza | 🟠 | Il servizio non agisce mai (ogni decisione porta `authorizes_action = false`), rifiuta un token sotto i 24 caratteri e un indirizzo di server che non sia `https://` o questa stessa macchina, e non salva mai un'immagine; provato, senza revisione indipendente. |
 | Documentazione | 🟢 | Otto lingue e il registro delle modifiche sono aggiornati. |
 
 ## 🎯 Panoramica
