@@ -258,14 +258,14 @@
     {
      "name": "tests/",
      "desc": {
-      "en": "192 tests: motion, policy, service, worker, daily summary",
-      "es": "192 pruebas: movimiento, política, servicio, trabajador, resumen diario",
-      "de": "192 Tests: Bewegung, Richtlinie, Dienst, Arbeiter, Tagesübersicht",
-      "fr": "192 tests : mouvement, politique, service, travailleur, résumé quotidien",
-      "it": "192 test: movimento, politica, servizio, worker, riepilogo giornaliero",
-      "ja": "192 件：動き、ポリシー、サービス、ワーカー、日次サマリー",
-      "zh": "192 项：运动、策略、服务、工作进程、每日摘要",
-      "pt": "192 testes: movimento, política, serviço, trabalhador, resumo diário"
+      "en": "{{fact:tests:ARMOR-SERVER-AI|192}} tests: motion, policy, service, worker, daily summary",
+      "es": "{{fact:tests:ARMOR-SERVER-AI|192}} pruebas: movimiento, política, servicio, trabajador, resumen diario",
+      "de": "{{fact:tests:ARMOR-SERVER-AI|192}} Tests: Bewegung, Richtlinie, Dienst, Arbeiter, Tagesübersicht",
+      "fr": "{{fact:tests:ARMOR-SERVER-AI|192}} tests : mouvement, politique, service, travailleur, résumé quotidien",
+      "it": "{{fact:tests:ARMOR-SERVER-AI|192}} test: movimento, politica, servizio, worker, riepilogo giornaliero",
+      "ja": "{{fact:tests:ARMOR-SERVER-AI|192}} 件：動き、ポリシー、サービス、ワーカー、日次サマリー",
+      "zh": "{{fact:tests:ARMOR-SERVER-AI|192}} 项：运动、策略、服务、工作进程、每日摘要",
+      "pt": "{{fact:tests:ARMOR-SERVER-AI|192}} testes: movimento, política, serviço, trabalhador, resumo diário"
      }
     },
     {
