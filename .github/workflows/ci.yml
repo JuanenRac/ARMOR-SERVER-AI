@@ -37,7 +37,7 @@ jobs:
   # tests of the tools always run. Main, the tags, a scheduled or manual run and a pull request with the label full-ci run everything, and when the answer cannot be found it is yes.
   changes:
     name: Which paths changed
-    uses: JuanenRac/ARMOR-DEVOPS/.github/workflows/changed-paths.yml@4aef6f86653810cc994545caaa41245bbf17e264
+    uses: JuanenRac/ARMOR-DEVOPS/.github/workflows/changed-paths.yml@a0fd0186dbf23c527b8c1dae70ca9a409b94c12a
     with:
       label: full-ci
       paths: |
