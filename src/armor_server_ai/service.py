@@ -18,6 +18,7 @@ ARMOR_AI_CONFIRM_FRAMES (2), ARMOR_AI_COOLDOWN_S (60).
 from __future__ import annotations
 
 import argparse
+import http.client
 import ipaddress
 import json
 from concurrent.futures import ThreadPoolExecutor
@@ -112,10 +113,10 @@ class HttpServer:
             detail = ""
             try:
                 detail = str(json.loads(error.read()).get("error", ""))
-            except (ValueError, AttributeError):
+            except (ValueError, AttributeError, OSError, http.client.HTTPException):   # a cut body: the status still says what happened
                 pass
             raise ServerError(error.code, detail or "http_error") from None
-        except (urllib.error.URLError, TimeoutError, OSError) as error:
+        except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException) as error:   # HTTPException: cut or not HTTP
             raise ServerError(0, "unreachable") from error
 
     def context(self) -> dict:
