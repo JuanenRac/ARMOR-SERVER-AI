@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A cut or garbled server answer is reported as unreachable**, and a refusal whose body is cut keeps its status, instead of an unhandled error.
 - **The shared project tool is the current one:** the copy follows the shared repository, which now knows the new solar panel node.
 
 - **The shared CI workflow pins the current setup-java action:** the line follows the template of the shared repository.
