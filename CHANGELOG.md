@@ -4,13 +4,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.3.5] - Cut answers told as unreachable and current shared tools
+
 - **The shared tools read the output of processes as UTF-8:** `tools/status_lights.py`, `tools/sync_manifests.py` and `tools/universal_readme_check.py` are the current copies; on Windows a character outside the code page no longer breaks a check.
 - **A cut or garbled server answer is reported as unreachable**, and a refusal whose body is cut keeps its status, instead of an unhandled error.
 - **The shared project tool is the current one:** the copy follows the shared repository, which now knows the new solar panel node.
-
 - **The shared CI workflow pins the current setup-java action:** the line follows the template of the shared repository.
-
 - **The copy of the shared validator is current:** `tools/armor_ci_validate.py` now also checks with `node --check` that the scripts served to a browser parse, in a repository that has them under `panel/` or `public/`.
+
 ## [0.3.4] - Redirect-proof calls to the server, simulator evidence and generated file trees
 
 - **The structure generator can write a figure read from the code:** `tools/make_structure.py` resolves `{{fact:NAME|LAST}}` in the descriptions of `docs/structure.json` where the documentation tools are next to the repository, and writes LAST (the figure it had when last written) everywhere else, so a repository still builds on its own.
